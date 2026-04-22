@@ -70,7 +70,10 @@ public final class DefaultPrivacyService implements PrivacyService {
             current.pingSoundEnabled(),
             current.pingActionbarEnabled(),
             current.socialSpyEnabled(),
-            enabled
+            enabled,
+            current.mentionNotificationsEnabled(),
+            current.staffChatEnabled(),
+            current.localeTag()
         ));
     }
 }

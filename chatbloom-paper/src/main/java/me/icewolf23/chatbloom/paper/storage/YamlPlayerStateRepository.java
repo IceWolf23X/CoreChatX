@@ -1,7 +1,7 @@
 package me.icewolf23.chatbloom.paper.storage;
 
-import icewolf23x.chatBloom.data.PlayerDataStore;
-import icewolf23x.chatBloom.data.PlayerSettings;
+import me.icewolf23.chatbloom.paper.data.PlayerDataStore;
+import me.icewolf23.chatbloom.paper.data.PlayerSettings;
 import me.icewolf23.chatbloom.common.model.PlayerSettingsRecord;
 import me.icewolf23.chatbloom.common.storage.repository.PlayerStateRepository;
 
@@ -23,7 +23,10 @@ public final class YamlPlayerStateRepository implements PlayerStateRepository {
             settings.isPingSoundEnabled(),
             settings.isPingActionbarEnabled(),
             settings.isSocialSpyEnabled(),
-            settings.isPmEnabled()
+            settings.isPmEnabled(),
+            settings.isMentionNotificationsEnabled(),
+            settings.isStaffChatEnabled(),
+            settings.getLocaleTag()
         );
     }
 
@@ -34,6 +37,9 @@ public final class YamlPlayerStateRepository implements PlayerStateRepository {
         settings.setPingActionbarEnabled(record.pingActionbarEnabled());
         settings.setSocialSpyEnabled(record.socialSpyEnabled());
         settings.setPmEnabled(record.pmEnabled());
+        settings.setMentionNotificationsEnabled(record.mentionNotificationsEnabled());
+        settings.setStaffChatEnabled(record.staffChatEnabled());
+        settings.setLocaleTag(record.localeTag());
         playerDataStore.save(record.playerId());
     }
 }

@@ -5,7 +5,6 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
-import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -20,7 +19,6 @@ import me.icewolf23.chatbloom.common.network.PrivateMessageResultPacket;
 import me.icewolf23.chatbloom.common.network.ProxyMessageType;
 import org.slf4j.Logger;
 
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Optional;
 
@@ -35,13 +33,11 @@ public final class ChatBloomVelocityPlugin {
 
     private final ProxyServer proxyServer;
     private final Logger logger;
-    private final Path dataDirectory;
 
     @Inject
-    public ChatBloomVelocityPlugin(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory) {
+    public ChatBloomVelocityPlugin(ProxyServer proxyServer, Logger logger) {
         this.proxyServer = proxyServer;
         this.logger = logger;
-        this.dataDirectory = dataDirectory;
     }
 
     @Subscribe
@@ -71,14 +67,6 @@ public final class ChatBloomVelocityPlugin {
         } catch (Exception exception) {
             logger.warn("Failed to route ChatBloom proxy message from {}: {}", sourceConnection.getServerInfo().getName(), exception.getMessage());
         }
-    }
-
-    public ProxyServer proxyServer() {
-        return proxyServer;
-    }
-
-    public Path dataDirectory() {
-        return dataDirectory;
     }
 
     private void routeNetworkChat(ChatMessagePacket packet) {

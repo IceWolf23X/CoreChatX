@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.storage;
 
-import icewolf23x.chatBloom.data.GlobalStateStore;
+import me.icewolf23.chatbloom.paper.data.GlobalStateStore;
 import me.icewolf23.chatbloom.common.model.GlobalStateRecord;
 import me.icewolf23.chatbloom.common.storage.repository.GlobalStateRepository;
 

@@ -1,13 +1,13 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-import icewolf23x.chatBloom.chatitem.ChatItemService;
-import icewolf23x.chatBloom.chatitem.SnapshotRegistry;
-import icewolf23x.chatBloom.service.ChatService;
-import icewolf23x.chatBloom.service.CooldownService;
-import icewolf23x.chatBloom.service.FormatService;
-import icewolf23x.chatBloom.service.LegacyFormattingService;
-import icewolf23x.chatBloom.service.NotificationService;
-import icewolf23x.chatBloom.service.PrivateMessageService;
-import icewolf23x.chatBloom.service.WordFilterService;
+import me.icewolf23.chatbloom.paper.chatitem.ChatItemService;
+import me.icewolf23.chatbloom.paper.chatitem.SnapshotRegistry;
+import me.icewolf23.chatbloom.paper.service.ChatService;
+import me.icewolf23.chatbloom.paper.service.CooldownService;
+import me.icewolf23.chatbloom.paper.service.FormatService;
+import me.icewolf23.chatbloom.paper.service.LegacyFormattingService;
+import me.icewolf23.chatbloom.paper.service.NotificationService;
+import me.icewolf23.chatbloom.paper.service.PrivateMessageService;
+import me.icewolf23.chatbloom.paper.service.WordFilterService;
 import me.icewolf23.chatbloom.common.channel.ChannelService;
 import me.icewolf23.chatbloom.common.event.EventBus;
 import me.icewolf23.chatbloom.common.event.SimpleEventBus;
@@ -93,7 +93,7 @@ public final class ServiceRegistry {
         this.chatPipelineEntry = new PaperChatPipelineEntry(chatPipeline, chatService);
         this.networkBridge = new PaperNetworkBridge(plugin, false, "chatbloom:main", "");
         this.settingsMenuFactory = new SettingsMenuFactory();
-        this.channelAudienceResolver = new PaperChannelAudienceResolver();
+        this.channelAudienceResolver = new PaperChannelAudienceResolver(repositoryRegistry.playerStateRepository());
         this.bridgeServerId = "";
     }
 

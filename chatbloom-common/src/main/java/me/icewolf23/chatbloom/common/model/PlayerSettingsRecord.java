@@ -7,6 +7,9 @@ public record PlayerSettingsRecord(
     boolean pingSoundEnabled,
     boolean pingActionbarEnabled,
     boolean socialSpyEnabled,
-    boolean pmEnabled
+    boolean pmEnabled,
+    boolean mentionNotificationsEnabled,
+    boolean staffChatEnabled,
+    String localeTag
 ) {
 }

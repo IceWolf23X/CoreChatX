@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-import icewolf23x.chatBloom.data.GlobalStateStore;
-import icewolf23x.chatBloom.data.PlayerDataStore;
+import me.icewolf23.chatbloom.paper.data.GlobalStateStore;
+import me.icewolf23.chatbloom.paper.data.PlayerDataStore;
 import me.icewolf23.chatbloom.common.storage.repository.ActiveChannelRepository;
 import me.icewolf23.chatbloom.common.storage.repository.GlobalStateRepository;
 import me.icewolf23.chatbloom.common.storage.repository.IgnoreRepository;
@@ -25,7 +25,7 @@ public final class RepositoryRegistry {
     private MuteRepository muteRepository;
     private ActiveChannelRepository activeChannelRepository;
 
-    public RepositoryRegistry(ChatBloomPaperPlugin plugin, ConfigRegistry configRegistry) {
+    public RepositoryRegistry(ChatBloomPaperPlugin plugin) {
         this.plugin = plugin;
     }
 

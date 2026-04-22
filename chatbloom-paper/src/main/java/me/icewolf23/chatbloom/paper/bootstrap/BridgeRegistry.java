@@ -23,7 +23,7 @@ public final class BridgeRegistry {
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin);
         boolean proxyMode = configRegistry.deployment().mode() == DeploymentMode.PROXY;
         String configuredServerId = configRegistry.configurationService().main().getString("deployment.proxy.server-id", "paper-backend");
-        String serverId = configuredServerId == null ? "" : configuredServerId.trim();
+        String serverId = configuredServerId.trim();
         if (serverId.isEmpty()) {
             serverId = "paper-backend";
             plugin.getLogger().warning("deployment.proxy.server-id is blank. Falling back to '" + serverId + "'.");

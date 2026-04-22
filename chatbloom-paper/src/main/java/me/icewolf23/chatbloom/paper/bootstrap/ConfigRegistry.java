@@ -1,5 +1,5 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-import icewolf23x.chatBloom.config.ConfigurationService;
+import me.icewolf23.chatbloom.paper.config.ConfigurationService;
 import me.icewolf23.chatbloom.common.config.DeploymentConfig;
 import me.icewolf23.chatbloom.common.config.DeploymentMode;
 import org.bukkit.configuration.file.FileConfiguration;

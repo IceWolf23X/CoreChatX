@@ -1,11 +1,11 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
 
-import icewolf23x.chatBloom.command.BroadcastCommand;
-import icewolf23x.chatBloom.command.ChatBloomCommand;
-import icewolf23x.chatBloom.command.MessageCommand;
-import icewolf23x.chatBloom.command.PingCommand;
-import icewolf23x.chatBloom.command.ReplyCommand;
-import icewolf23x.chatBloom.command.SocialSpyCommand;
+import me.icewolf23.chatbloom.paper.command.BroadcastCommand;
+import me.icewolf23.chatbloom.paper.command.ChatBloomCommand;
+import me.icewolf23.chatbloom.paper.command.MessageCommand;
+import me.icewolf23.chatbloom.paper.command.PingCommand;
+import me.icewolf23.chatbloom.paper.command.ReplyCommand;
+import me.icewolf23.chatbloom.paper.command.SocialSpyCommand;
 import me.icewolf23.chatbloom.paper.command.ChannelCommand;
 import me.icewolf23.chatbloom.paper.command.ChatSettingsCommand;
 import me.icewolf23.chatbloom.paper.command.ClearChatCommand;

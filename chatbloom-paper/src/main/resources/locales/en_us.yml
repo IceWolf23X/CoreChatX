@@ -1,0 +1,12 @@
+# Locale foundation for later locale-aware messaging.
+# The plugin currently still uses messages.yml as the active source of truth.
+
+general:
+  player_not_found: "<red>Player not found.</red>"
+
+privacy:
+  ignore:
+    usage: "<red>Usage: /ignore <player></red>"
+    self: "<red>You cannot ignore yourself.</red>"
+    already: "<yellow>You are already ignoring that player.</yellow>"
+    success: "<gray>You are now ignoring <white>{target_name}</white>.</gray>"

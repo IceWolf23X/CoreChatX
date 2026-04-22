@@ -1,8 +1,8 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
 
-import icewolf23x.chatBloom.listener.ChatListener;
-import icewolf23x.chatBloom.listener.ConnectionListener;
-import icewolf23x.chatBloom.listener.InventoryPreviewListener;
+import me.icewolf23.chatbloom.paper.listener.ChatListener;
+import me.icewolf23.chatbloom.paper.listener.ConnectionListener;
+import me.icewolf23.chatbloom.paper.listener.InventoryPreviewListener;
 import me.icewolf23.chatbloom.paper.gui.SettingsMenuListener;
 
 public final class ListenerRegistry {

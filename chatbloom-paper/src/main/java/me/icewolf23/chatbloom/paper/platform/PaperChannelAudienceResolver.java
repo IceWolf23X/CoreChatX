@@ -2,6 +2,7 @@ package me.icewolf23.chatbloom.paper.platform;
 
 import me.icewolf23.chatbloom.common.channel.ChannelScope;
 import me.icewolf23.chatbloom.common.channel.ChatChannel;
+import me.icewolf23.chatbloom.common.storage.repository.PlayerStateRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -9,6 +10,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public final class PaperChannelAudienceResolver {
+
+    private final PlayerStateRepository playerStateRepository;
+
+    public PaperChannelAudienceResolver(PlayerStateRepository playerStateRepository) {
+        this.playerStateRepository = playerStateRepository;
+    }
 
     public Set<Player> resolveRecipients(Player sender, ChatChannel channel) {
         Set<Player> recipients = new LinkedHashSet<>();
@@ -46,10 +53,17 @@ public final class PaperChannelAudienceResolver {
     }
 
     public boolean canSend(Player player, ChatChannel channel) {
-        return channel.enabled() && (channel.sendPermission().isBlank() || player.hasPermission(channel.sendPermission()));
+        return channel.enabled()
+            && (channel.sendPermission().isBlank() || player.hasPermission(channel.sendPermission()))
+            && isStaffChannelEnabled(player, channel);
     }
 
     public boolean canReceive(Player player, ChatChannel channel) {
-        return channel.receivePermission().isBlank() || player.hasPermission(channel.receivePermission());
+        return isStaffChannelEnabled(player, channel)
+            && (channel.receivePermission().isBlank() || player.hasPermission(channel.receivePermission()));
+    }
+
+    private boolean isStaffChannelEnabled(Player player, ChatChannel channel) {
+        return !"staff".equalsIgnoreCase(channel.id()) || playerStateRepository.load(player.getUniqueId()).staffChatEnabled();
     }
 }
