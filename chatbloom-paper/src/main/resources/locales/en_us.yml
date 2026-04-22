@@ -1,11 +1,12 @@
-# Locale overrides for configMessage(...) paths.
-# Any key missing here falls back automatically to messages.yml.
+# Locale foundation for later locale-aware messaging.
+# The plugin currently still uses messages.yml as the active source of truth.
 
-locale:
-  current: "{prefix} <gray>Your active locale is <white>{locale}</white>.</gray>"
-  changed: "{prefix} <gray>Your locale is now <white>{locale}</white>.</gray>"
-  invalid: "{prefix} <red>Locale <white>{locale}</white> is not available on this server.</red>"
+general:
+  player_not_found: "<red>Player not found.</red>"
 
-errors:
-  players-only: "{prefix} <red>Only players can use this command.</red>"
-  no-permission: "{prefix} <red>You do not have permission to do that.</red>"
+privacy:
+  ignore:
+    usage: "<red>Usage: /ignore <player></red>"
+    self: "<red>You cannot ignore yourself.</red>"
+    already: "<yellow>You are already ignoring that player.</yellow>"
+    success: "<gray>You are now ignoring <white>{target_name}</white>.</gray>"

@@ -3,7 +3,6 @@ package me.icewolf23.chatbloom.paper.service;
 import me.icewolf23.chatbloom.paper.ChatBloom;
 import me.icewolf23.chatbloom.paper.model.ChatItemType;
 import me.icewolf23.chatbloom.paper.util.TemplatePlaceholderNormalizer;
-import me.icewolf23.chatbloom.common.channel.ChatChannel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -37,12 +36,7 @@ public final class FormatService {
     }
 
     public Component configMessage(String path, Player player, TagResolver... resolvers) {
-        String template = player == null
-            ? null
-            : plugin.locales().template(player.getUniqueId(), path);
-        if (template == null || template.isBlank()) {
-            template = plugin.configuration().messages().getString(path, "{prefix}");
-        }
+        String template = plugin.configuration().messages().getString(path, "{prefix}");
         return deserialize(template, player, resolvers);
     }
 
@@ -51,30 +45,22 @@ public final class FormatService {
     }
 
     public Component publicChat(Player player, Component message, String channelId) {
-        ChatChannel channel = plugin.services().channelService().findChannel(channelId)
-            .orElseGet(() -> plugin.services().channelService().getDefaultChannel());
-        return publicChat(player, message, channel);
-    }
-
-    public Component publicChat(Player player, Component message, ChatChannel channel) {
         Component pluginPrefix = deserialize(
             plugin.configuration().chat().getString("public-chat.plugin-prefix", ""),
             player
         );
         Component channelPrefix = Component.empty();
-        if (channel.id() != null && !channel.id().isBlank() && !"global".equalsIgnoreCase(channel.id())) {
+        if (channelId != null && !channelId.isBlank() && !"global".equalsIgnoreCase(channelId)) {
             channelPrefix = deserialize(
                 plugin.configuration().chat().getString("public-chat.channel-prefix-format", "<dark_gray>[</dark_gray><white>{channel_name}</white><dark_gray>]</dark_gray> "),
                 player,
-                Placeholder.unparsed("channel_name", channel.id())
+                Placeholder.unparsed("channel_name", channelId)
             );
         }
         Component rankPrefix = plugin.hooks().hasLuckPerms()
             ? plugin.hooks().groupPrefix(player)
             : deserialize(plugin.configuration().chat().getString("public-chat.fallback-rank-prefix", ""), player);
-        String template = channel.format() == null || channel.format().isBlank()
-            ? plugin.configuration().chat().getString("public-chat.format", "{player_name}: {message}")
-            : channel.format();
+        String template = plugin.configuration().chat().getString("public-chat.format", "{player_name}: {message}");
         return deserialize(
             template,
             player,
@@ -87,30 +73,22 @@ public final class FormatService {
     }
 
     public Component publicChatRemote(String senderName, String rankPrefixTemplate, Component message, String channelId) {
-        ChatChannel channel = plugin.services().channelService().findChannel(channelId)
-            .orElseGet(() -> plugin.services().channelService().getDefaultChannel());
-        return publicChatRemote(senderName, rankPrefixTemplate, message, channel);
-    }
-
-    public Component publicChatRemote(String senderName, String rankPrefixTemplate, Component message, ChatChannel channel) {
         Component pluginPrefix = deserialize(
             plugin.configuration().chat().getString("public-chat.plugin-prefix", ""),
             null
         );
         Component channelPrefix = Component.empty();
-        if (channel.id() != null && !channel.id().isBlank() && !"global".equalsIgnoreCase(channel.id())) {
+        if (channelId != null && !channelId.isBlank() && !"global".equalsIgnoreCase(channelId)) {
             channelPrefix = deserialize(
                 plugin.configuration().chat().getString("public-chat.channel-prefix-format", "<dark_gray>[</dark_gray><white>{channel_name}</white><dark_gray>]</dark_gray> "),
                 null,
-                Placeholder.unparsed("channel_name", channel.id())
+                Placeholder.unparsed("channel_name", channelId)
             );
         }
         Component rankPrefix = rankPrefixTemplate == null || rankPrefixTemplate.isBlank()
             ? Component.empty()
             : LegacyComponentSerializer.legacyAmpersand().deserialize(rankPrefixTemplate);
-        String template = channel.format() == null || channel.format().isBlank()
-            ? plugin.configuration().chat().getString("public-chat.format", "{player_name}: {message}")
-            : channel.format();
+        String template = plugin.configuration().chat().getString("public-chat.format", "{player_name}: {message}");
         return deserialize(
             template,
             null,

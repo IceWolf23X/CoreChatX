@@ -1,8 +1,6 @@
 package me.icewolf23.chatbloom.paper.command;
 
 import me.icewolf23.chatbloom.paper.ChatBloom;
-import me.icewolf23.chatbloom.paper.locale.PaperLocaleService;
-import me.icewolf23.chatbloom.common.model.PlayerSettingsRecord;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -31,7 +29,6 @@ public final class ChatBloomCommand implements TabExecutor {
             }
             sender.sendMessage("/chatbloom reload");
             sender.sendMessage("/chatbloom settings");
-            sender.sendMessage("/chatbloom locale [locale]");
             sender.sendMessage("/chatbloom item <uuid>");
             return true;
         }
@@ -72,44 +69,6 @@ public final class ChatBloomCommand implements TabExecutor {
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("locale")) {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage(plugin.formats().configMessage("errors.players-only", null));
-                return true;
-            }
-            if (!player.hasPermission("chatbloom.command.locale")) {
-                player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
-                return true;
-            }
-            PlayerSettingsRecord current = plugin.repositories().playerStateRepository().load(player.getUniqueId());
-            PaperLocaleService localeService = plugin.locales() instanceof PaperLocaleService paperLocaleService ? paperLocaleService : null;
-            if (args.length == 1) {
-                player.sendMessage(plugin.formats().configMessage(
-                    "locale.current",
-                    player,
-                    Placeholder.unparsed("locale", current.localeTag())
-                ));
-                return true;
-            }
-            String requested = localeService == null ? args[1].toLowerCase(Locale.ROOT) : localeService.normalizeLocaleTag(args[1]);
-            if (localeService != null && !localeService.isSupported(requested)) {
-                player.sendMessage(plugin.formats().configMessage("locale.invalid", player, Placeholder.unparsed("locale", requested)));
-                return true;
-            }
-            plugin.repositories().playerStateRepository().save(new PlayerSettingsRecord(
-                current.playerId(),
-                current.pingSoundEnabled(),
-                current.pingActionbarEnabled(),
-                current.socialSpyEnabled(),
-                current.pmEnabled(),
-                current.mentionNotificationsEnabled(),
-                current.staffChatEnabled(),
-                requested
-            ));
-            player.sendMessage(plugin.formats().configMessage("locale.changed", player, Placeholder.unparsed("locale", requested)));
-            return true;
-        }
-
         if (args[0].equalsIgnoreCase("item")) {
             if (!(sender instanceof Player player)) {
                 sender.sendMessage(plugin.formats().configMessage("errors.players-only", null));
@@ -132,7 +91,7 @@ public final class ChatBloomCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.no-permission", sender instanceof Player player ? player : null));
             return true;
         }
-        sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/chatbloom <reload|settings|locale|item>")));
+        sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/chatbloom <reload|settings|item>")));
         return true;
     }
 
@@ -142,12 +101,7 @@ public final class ChatBloomCommand implements TabExecutor {
         if (args.length == 1) {
             complete("reload", args[0], suggestions);
             complete("settings", args[0], suggestions);
-            complete("locale", args[0], suggestions);
             complete("item", args[0], suggestions);
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("locale")) {
-            for (String locale : plugin.locales().availableLocales()) {
-                complete(locale, args[1], suggestions);
-            }
         }
         return suggestions;
     }

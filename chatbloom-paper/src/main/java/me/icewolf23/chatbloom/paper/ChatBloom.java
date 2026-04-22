@@ -2,12 +2,10 @@ package me.icewolf23.chatbloom.paper;
 
 import me.icewolf23.chatbloom.paper.chatitem.ChatItemService;
 import me.icewolf23.chatbloom.paper.chatitem.SnapshotRegistry;
-import me.icewolf23.chatbloom.paper.bridge.BridgeDispatchService;
 import me.icewolf23.chatbloom.paper.config.ConfigurationService;
 import me.icewolf23.chatbloom.paper.data.GlobalStateStore;
 import me.icewolf23.chatbloom.paper.data.PlayerDataStore;
 import me.icewolf23.chatbloom.paper.hook.HookService;
-import me.icewolf23.chatbloom.common.locale.LocaleService;
 import me.icewolf23.chatbloom.paper.service.ChatService;
 import me.icewolf23.chatbloom.paper.service.CooldownService;
 import me.icewolf23.chatbloom.paper.service.FormatService;
@@ -87,14 +85,6 @@ public abstract class ChatBloom extends JavaPlugin {
 
     public PrivateMessageService privateMessages() {
         return serviceRegistry.privateMessageService();
-    }
-
-    public LocaleService locales() {
-        return serviceRegistry.localeService();
-    }
-
-    public BridgeDispatchService bridges() {
-        return serviceRegistry.bridgeDispatchService();
     }
 
     public ConfigRegistry configs() {

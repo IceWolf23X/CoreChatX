@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 
 public final class BridgeRegistry {
 
+    private static final String PROXY_CHANNEL = "chatbloom:main";
+
     private final ChatBloomPaperPlugin plugin;
     private final ConfigRegistry configRegistry;
     private final ServiceRegistry serviceRegistry;
@@ -20,20 +22,20 @@ public final class BridgeRegistry {
         Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin);
         boolean proxyMode = configRegistry.deployment().mode() == DeploymentMode.PROXY;
-        String serverId = configRegistry.deployment().serverId();
+        String configuredServerId = configRegistry.configurationService().main().getString("deployment.proxy.server-id", "paper-backend");
+        String serverId = configuredServerId.trim();
         if (serverId.isEmpty()) {
             serverId = "paper-backend";
             plugin.getLogger().warning("deployment.proxy.server-id is blank. Falling back to '" + serverId + "'.");
         }
-        String proxyChannel = configRegistry.deployment().networkChannel();
-        PaperNetworkBridge bridge = new PaperNetworkBridge(plugin, proxyMode, proxyChannel, serverId);
+        PaperNetworkBridge bridge = new PaperNetworkBridge(plugin, proxyMode, PROXY_CHANNEL, serverId);
         serviceRegistry.networkBridge(bridge);
         serviceRegistry.bridgeServerId(serverId);
         if (proxyMode) {
-            Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, proxyChannel);
-            Bukkit.getMessenger().registerIncomingPluginChannel(plugin, proxyChannel, bridge);
+            Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, PROXY_CHANNEL);
+            Bukkit.getMessenger().registerIncomingPluginChannel(plugin, PROXY_CHANNEL, bridge);
             plugin.getLogger().info("Proxy mode active on Paper backend '" + serverId + "'.");
-            plugin.getLogger().info("ChatBloom proxy channel active: '" + proxyChannel + "'.");
+            plugin.getLogger().info("ChatBloom proxy channel active: '" + PROXY_CHANNEL + "'.");
             plugin.getLogger().info("ChatBloom proxy routing enabled for NETWORK channels and cross-server PMs.");
             boolean hasNetworkChannel = serviceRegistry.channelService().channels().stream()
                 .anyMatch(channel -> channel.enabled() && channel.scope() == ChannelScope.NETWORK);
