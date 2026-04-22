@@ -72,9 +72,44 @@ public final class FormatService {
         );
     }
 
+    public Component publicChatRemote(String senderName, String rankPrefixTemplate, Component message, String channelId) {
+        Component pluginPrefix = deserialize(
+            plugin.configuration().chat().getString("public-chat.plugin-prefix", ""),
+            null
+        );
+        Component channelPrefix = Component.empty();
+        if (channelId != null && !channelId.isBlank() && !"global".equalsIgnoreCase(channelId)) {
+            channelPrefix = deserialize(
+                plugin.configuration().chat().getString("public-chat.channel-prefix-format", "<dark_gray>[</dark_gray><white>{channel_name}</white><dark_gray>]</dark_gray> "),
+                null,
+                Placeholder.unparsed("channel_name", channelId)
+            );
+        }
+        Component rankPrefix = rankPrefixTemplate == null || rankPrefixTemplate.isBlank()
+            ? Component.empty()
+            : LegacyComponentSerializer.legacyAmpersand().deserialize(rankPrefixTemplate);
+        String template = plugin.configuration().chat().getString("public-chat.format", "{player_name}: {message}");
+        return deserialize(
+            template,
+            null,
+            Placeholder.component("plugin_prefix", pluginPrefix),
+            Placeholder.component("channel_prefix", channelPrefix),
+            Placeholder.component("rank_prefix", rankPrefix),
+            Placeholder.unparsed("player_name", senderName),
+            Placeholder.component("message", message)
+        );
+    }
+
     public Component mentionToken(Player viewer, String name) {
         String template = plugin.configuration().chat().getString("mentions.token-format", "<yellow>@{player_name}</yellow>");
         return deserialize(template, viewer, Placeholder.unparsed("player_name", name));
+    }
+
+    public String rankPrefixTemplate(Player player) {
+        Component rankPrefix = plugin.hooks().hasLuckPerms()
+            ? plugin.hooks().groupPrefix(player)
+            : deserialize(plugin.configuration().chat().getString("public-chat.fallback-rank-prefix", ""), player);
+        return LegacyComponentSerializer.legacyAmpersand().serialize(rankPrefix);
     }
 
     public Component customPingToken(Player viewer, String format, String trigger) {
@@ -103,11 +138,15 @@ public final class FormatService {
     }
 
     public Component privateMessageToSender(CommandSender sender, String senderName, Player target, Component message) {
+        return privateMessageToSender(sender, senderName, target.getName(), message);
+    }
+
+    public Component privateMessageToSender(CommandSender sender, String senderName, String targetName, Component message) {
         return deserialize(
             plugin.configuration().messages().getString("private-messages.to-sender", "{message}"),
             sender instanceof Player player ? player : null,
             Placeholder.unparsed("sender_name", senderName),
-            Placeholder.unparsed("target_name", target.getName()),
+            Placeholder.unparsed("target_name", targetName),
             Placeholder.component("message", message)
         );
     }
@@ -131,11 +170,15 @@ public final class FormatService {
     }
 
     public Component spyMessage(String senderName, Player target, Component message) {
+        return spyMessage(senderName, target.getName(), message);
+    }
+
+    public Component spyMessage(String senderName, String targetName, Component message) {
         return deserialize(
             plugin.configuration().messages().getString("private-messages.spy", "{message}"),
-            target,
+            null,
             Placeholder.unparsed("sender_name", senderName),
-            Placeholder.unparsed("target_name", target.getName()),
+            Placeholder.unparsed("target_name", targetName),
             Placeholder.component("message", message)
         );
     }

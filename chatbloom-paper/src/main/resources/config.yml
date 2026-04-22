@@ -5,6 +5,9 @@ deployment:
   # PROXY = optional proxy-aware mode, requires full restart after changes
   mode: "STANDALONE"
   require-full-restart-on-mode-change: true
+  proxy:
+    # Must match the backend server name known by Velocity when mode = PROXY.
+    server-id: "paper-1"
 
 debug: false
 

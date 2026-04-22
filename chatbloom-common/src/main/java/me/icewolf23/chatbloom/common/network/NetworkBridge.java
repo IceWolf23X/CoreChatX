@@ -6,4 +6,6 @@ public interface NetworkBridge {
     void publishChat(ChatMessagePacket packet);
 
     void publishPrivateMessage(PrivateMessagePacket packet);
+
+    void publishPrivateMessageResult(PrivateMessageResultPacket packet);
 }

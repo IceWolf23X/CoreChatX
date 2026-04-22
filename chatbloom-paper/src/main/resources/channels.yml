@@ -1,5 +1,6 @@
 # Channel foundation for Run 1.
 # Standalone mode uses the existing global chat behavior by default.
+# In PROXY mode, only channels with scope NETWORK are forwarded cross-server.
 
 channels:
   global:

@@ -1,0 +1,79 @@
+RUN:
+Run 2
+
+GOAL:
+Decidere il passo corretto dopo il completamento del proxy core minimale del Run 2, senza fare feature creep e senza lasciare il routing Paper/Velocity in uno stato fragile.
+
+FOUND:
+- Il core proxy del Run 2 ora esiste e compila:
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PluginMessageCodec.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/ProxyMessageType.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/ChatMessagePacket.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PrivateMessagePacket.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PrivateMessageResultPacket.java`
+- Paper bridge reale:
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/network/PaperNetworkBridge.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/BridgeRegistry.java`
+- Velocity routing reale:
+- `chatbloom-velocity/src/main/java/me/icewolf23/chatbloom/velocity/bootstrap/ChatBloomVelocityPlugin.java`
+- La chat cross-server viene inoltrata solo per canali `ChannelScope.NETWORK` da:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/ChatService.java`
+- Le PM cross-server usano request/result target-side da:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- `/msg` e `/reply` sono già aggiornati per target/reply remoti:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/command/MessageCommand.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/command/ReplyCommand.java`
+- La root build passa con `mvn -q -DskipTests package`.
+
+CURRENT PLAN:
+- Fare un ultimo step di Run 2 prima di aprire il Run 3.
+- Evitare di aggiungere nuove fondamenta architetturali.
+- Scegliere se:
+- consolidare il proxy core con edge-case handling e audit/log consistency
+- oppure passare subito a Discord/Telegram in modo minimale e safe
+- oppure fermarsi dichiarando il routing core come sufficiente per chiudere Run 2
+
+DOUBTS:
+1. Dopo il proxy core minimale, il passo più corretto per chiudere Run 2 è:
+   - hardening del routing Paper/Velocity
+   - bridge Discord
+   - bridge Telegram
+   - audit/log consistency e config polish
+   Quale ordine è consigliato?
+2. Il routing attuale va considerato già abbastanza completo per Run 2 se compila e rispetta il modello target-side PM / NETWORK-only fanout, oppure ci sono 1-2 hardening obbligatori da fare prima di qualsiasi bridge esterno?
+3. Discord e Telegram nel Run 2 vanno implementati davvero, anche in forma minima, oppure è più corretto lasciarli bounded/safely disabled se il core network ha appena raggiunto uno stato credibile?
+4. C’è qualche edge case specifico nel design attuale da correggere subito prima di considerare stabile il proxy core? In particolare:
+   - source backend senza player carrier per plugin messaging
+   - target backend offline / player moved during PM routing
+   - duplicate or stale PM result handling
+   - differenze di config tra backend per rendering locale
+5. `ChatService` e `PrivateMessageService` sono ancora accettabili come luogo temporaneo per la logica Run 2, oppure c’è un unico carve-out piccolo e pragmatico che dovrei fare subito prima di chiudere il run?
+
+FILES / CLASSES INVOLVED:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/ChatService.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/network/PaperNetworkBridge.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/BridgeRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ServiceRegistry.java`
+- `chatbloom-paper/src/main/resources/config.yml`
+- `chatbloom-paper/src/main/resources/channels.yml`
+- `chatbloom-velocity/src/main/java/me/icewolf23/chatbloom/velocity/bootstrap/ChatBloomVelocityPlugin.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PluginMessageCodec.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PrivateMessageResultPacket.java`
+
+CONSTRAINTS TO PRESERVE:
+- Proteggere la modalità standalone Paper.
+- La modalità proxy resta opzionale e restart-based.
+- Niente feature creep.
+- Niente nuova architettura transport più grande.
+- Velocity resta autorità di routing, non di rendering.
+- Paper resta autorità di rendering locale, notify/sound/actionbar, GUI e ChatItems locali.
+- Niente ChatItems cross-server in questo passaggio se non pulito.
+- Niente sync dell’active channel verso proxy nel Run 2.
+
+WHAT I NEED BACK:
+- decisione pratica su cosa fare adesso
+- cosa spostare / cosa non spostare
+- ordine consigliato fino a chiudere il Run 2
+- rischi principali
+- errori da evitare

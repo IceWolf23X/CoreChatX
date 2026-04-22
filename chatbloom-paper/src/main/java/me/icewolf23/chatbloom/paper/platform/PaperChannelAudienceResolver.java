@@ -35,6 +35,16 @@ public final class PaperChannelAudienceResolver {
         return recipients;
     }
 
+    public Set<Player> resolveRemoteRecipients(ChatChannel channel) {
+        Set<Player> recipients = new LinkedHashSet<>();
+        for (Player candidate : Bukkit.getOnlinePlayers()) {
+            if (canReceive(candidate, channel)) {
+                recipients.add(candidate);
+            }
+        }
+        return recipients;
+    }
+
     public boolean canSend(Player player, ChatChannel channel) {
         return channel.enabled() && (channel.sendPermission().isBlank() || player.hasPermission(channel.sendPermission()));
     }

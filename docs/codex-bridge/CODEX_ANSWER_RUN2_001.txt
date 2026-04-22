@@ -1,0 +1,138 @@
+RUN 2 QUESTION 001
+
+Decisione pratica sul transport minimale:
+Usa un singolo custom plugin messaging channel tra Paper e Velocity.
+Non costruire un transport framework più grande.
+Non usare broker esterni, socket custom o sync layer generici in questo run.
+
+Forma concreta consigliata:
+- un solo channel custom, es. chatbloom:main
+- codec minimale a packet-type + payload
+- packet families minime per Run 2:
+  - NETWORK_CHAT_FORWARD
+  - NETWORK_CHAT_DELIVER
+  - PM_REQUEST
+  - PM_DELIVER_TO_TARGET
+  - PM_RESULT_TO_SOURCE (success/deny)
+
+Nota importante:
+Per le PM cross-server, il target-side privacy/ignore non può essere deciso dal sender backend.
+Quindi la PM non va autorizzata completamente sul source Paper.
+Il target backend deve essere l’autorità per:
+- PM enabled/disabled del target
+- ignore list del target
+- consegna finale al target
+
+Scope minimo accettabile della routing implementation:
+1. cross-server PM reale
+2. network routing solo per canali esplicitamente NETWORK
+3. global/staff cross-server solo se configurati NETWORK
+4. channel scope SERVER/RADIUS resta locale al backend
+5. nessun active-channel sync verso proxy in Run 2
+6. nessun ChatItems cross-server se non pulito
+
+Quindi:
+- SI: PM cross-server
+- SI: fanout cross-server per canali NETWORK
+- NO: sync dello stato active channel al proxy
+- NO: local/radius over-network
+- NO: ChatItems proxy-aware se resta mezzo rotto
+
+Cosa fare su Paper:
+1. STANDALONE:
+   - lascia il path attuale invariato
+   - no-op network bridge
+
+2. PROXY:
+   - registra outgoing + incoming plugin messaging
+   - per public chat:
+     - se il canale è SERVER/RADIUS, usa solo il path locale
+     - se il canale è NETWORK:
+       - Paper fa sender-side checks locali (mutechat, cooldown, anti-repeat, anti-caps, sanitization)
+       - Paper consegna localmente ai player del suo backend
+       - poi invia a Velocity un packet NETWORK_CHAT_FORWARD con payload sanitizzato/plain e metadati
+   - per inbound remote chat:
+       - backend target renderizza e consegna localmente
+       - backend target gestisce mention notify/sound/actionbar locali
+       - non riapplicare sender-side cooldown/moderation history come se fosse chat locale del player remoto
+
+3. PM in PROXY:
+   - source Paper fa solo sender-side validation:
+     - cannot message self
+     - sender mute/cooldown
+     - empty message
+   - source Paper NON decide il target privacy/ignore se il target è remoto
+   - source Paper invia PM_REQUEST
+   - target Paper valida privacy/ignore locali e, se ok, consegna al target
+   - target Paper rimanda PM_RESULT_TO_SOURCE
+   - solo dopo success il source aggiorna sender feedback / cooldown accepted / reply target
+
+Cosa fare su Velocity:
+- registrare il messaging channel
+- ascoltare messaggi dai backend
+- usare il proxy come routing authority, non come rendering authority
+- per chat NETWORK:
+  - ricevere packet dal source backend
+  - individuare i backend destinatari
+  - inoltrare solo agli altri backend necessari
+  - non rimandare il packet al source backend se il source ha già consegnato localmente
+- per PM:
+  - ricevere PM_REQUEST
+  - trovare il server corrente del target usando il proxy state
+  - inoltrare al target backend
+  - inoltrare l’esito al source backend
+- non costruire adesso un player registry custom se il proxy sa già dove sono i player
+- non renderizzare Component finali sul proxy
+
+Risposta diretta al dubbio sul rendering:
+Velocity NON deve diventare l’autorità di rendering finale in questo Run 2.
+Velocity deve essere autorità di routing.
+Paper deve restare autorità di:
+- rendering locale
+- notify/sound/actionbar
+- GUI/chatitems locali
+- permission filtering finale locale dove serve
+
+Quindi:
+- Paper non deve spedire il final Component già deciso come unica fonte per tutti
+- Paper deve spedire payload già sanitizzato/plain + metadati
+- backend ricevente renderizza localmente
+
+Perché:
+- mantiene il proxy piccolo
+- rispetta il ruolo locale di Paper
+- evita di trascinare su Velocity tutto il rendering/config logic
+- semplifica mentions/sounds/actionbar locali
+
+Cose da rimandare esplicitamente:
+- active-channel sync verso proxy
+- state sync globale player/privacy/mute
+- ChatItems cross-server snapshot routing se non pulito
+- proxy-side final rendering
+- generic transport abstraction più grande
+- Discord/Telegram prima di avere stabile il core routing
+
+Ordine consigliato:
+1. definire il custom messaging channel e il codec minimale
+2. registrare transport Paper + listener Velocity
+3. implementare NETWORK chat forwarding solo per channel scope NETWORK
+4. implementare inbound remote chat delivery su Paper
+5. implementare PM request/result roundtrip
+6. aggiornare channels.yml/defaults o documentare chiaramente che global/staff devono essere NETWORK per avere fanout cross-server
+7. validare STANDALONE safe degradation
+8. solo dopo valutare bridge esterni
+
+Rischi:
+- duplicati se Velocity rimanda il chat packet anche al source backend
+- privacy bypass se il source backend autorizza una PM remota senza chiedere al target backend
+- re-run sbagliato di cooldown/anti-repeat su messaggi remoti
+- formato divergente se i backend non hanno config coerente
+- scope creep se si tenta anche ChatItems proxy-aware adesso
+
+Errori da evitare:
+- introdurre un framework transport grande
+- usare euristiche per capire se un canale è networked invece di usare ChannelScope.NETWORK
+- fare il rendering finale su Velocity in Run 2
+- syncare active channel al proxy solo per far funzionare il routing
+- implementare PM cross-server senza request/result target-side
+- forzare ChatItems cross-server in stato mezzo rotto

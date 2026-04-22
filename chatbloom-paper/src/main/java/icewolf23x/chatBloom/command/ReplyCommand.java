@@ -32,12 +32,7 @@ public final class ReplyCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/reply <message>")));
             return true;
         }
-        Player target = plugin.privateMessages().findReplyTarget(player);
-        if (target == null || !target.isOnline()) {
-            player.sendMessage(plugin.formats().configMessage("errors.no-reply-target", player));
-            return true;
-        }
-        plugin.privateMessages().sendPrivateMessage(player, target, String.join(" ", Arrays.asList(args)));
+        plugin.privateMessages().sendReply(player, String.join(" ", Arrays.asList(args)));
         return true;
     }
 

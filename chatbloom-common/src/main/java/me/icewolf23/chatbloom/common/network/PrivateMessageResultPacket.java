@@ -3,15 +3,15 @@ package me.icewolf23.chatbloom.common.network;
 import java.time.Instant;
 import java.util.UUID;
 
-public record PrivateMessagePacket(
+public record PrivateMessageResultPacket(
     UUID requestId,
     String sourceServerId,
     UUID senderId,
     UUID targetId,
-    String senderName,
     String targetName,
     String plainText,
-    boolean senderBypass,
+    boolean delivered,
+    String reasonKey,
     Instant sentAt
 ) {
 }

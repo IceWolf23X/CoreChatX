@@ -53,6 +53,7 @@ public final class ServiceRegistry {
     private NotificationService notificationService;
     private ChatService chatService;
     private PrivateMessageService privateMessageService;
+    private String bridgeServerId = "";
 
     public ServiceRegistry(ChatBloomPaperPlugin plugin, ConfigRegistry configRegistry, RepositoryRegistry repositoryRegistry) {
         this.plugin = plugin;
@@ -80,9 +81,10 @@ public final class ServiceRegistry {
         this.privateMessageService = new PrivateMessageService(plugin);
         this.chatPipeline = new LegacyPaperChatPipeline(publicChatSteps);
         this.chatPipelineEntry = new PaperChatPipelineEntry(chatPipeline, chatService);
-        this.networkBridge = new PaperNetworkBridge(false);
+        this.networkBridge = new PaperNetworkBridge(plugin, false, "chatbloom:main", "");
         this.settingsMenuFactory = new SettingsMenuFactory();
         this.channelAudienceResolver = new PaperChannelAudienceResolver();
+        this.bridgeServerId = "";
     }
 
     public void reload() {
@@ -122,6 +124,14 @@ public final class ServiceRegistry {
 
     public void networkBridge(NetworkBridge networkBridge) {
         this.networkBridge = networkBridge;
+    }
+
+    public String bridgeServerId() {
+        return bridgeServerId;
+    }
+
+    public void bridgeServerId(String bridgeServerId) {
+        this.bridgeServerId = bridgeServerId == null ? "" : bridgeServerId;
     }
 
     public SettingsMenuFactory settingsMenuFactory() {

@@ -9,6 +9,7 @@ public record ChatMessagePacket(
     String serverId,
     String channelId,
     String plainText,
+    String rankPrefixTemplate,
     Instant sentAt
 ) {
 }

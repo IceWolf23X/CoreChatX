@@ -33,16 +33,8 @@ public final class MessageCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/msg <player> <message>")));
             return true;
         }
-        Player target = Bukkit.getOnlinePlayers().stream()
-            .filter(online -> online.getName().equalsIgnoreCase(args[0]))
-            .findFirst()
-            .orElse(null);
-        if (target == null) {
-            sender.sendMessage(plugin.formats().configMessage("errors.player-not-found", player));
-            return true;
-        }
         String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        plugin.privateMessages().sendPrivateMessage(sender, sender.getName(), target, message);
+        plugin.privateMessages().sendPrivateMessage(sender, sender.getName(), args[0], message);
         return true;
     }
 

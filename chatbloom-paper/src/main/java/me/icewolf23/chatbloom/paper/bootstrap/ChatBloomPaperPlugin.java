@@ -30,7 +30,7 @@ public final class ChatBloomPaperPlugin extends ChatBloom {
             hookService.refresh();
 
             if (bootDeploymentConfig.mode() == DeploymentMode.PROXY) {
-                getLogger().warning("Proxy mode is configured. A full restart is required after deployment mode changes, and the proxy transport remains stubbed in Run 1.");
+                getLogger().warning("Proxy mode is configured. A full restart is required after deployment mode changes, and remote chat/PM routing depends on a matching ChatBloom Velocity proxy install.");
             }
         } catch (Exception exception) {
             getLogger().severe("ChatBloom could not start cleanly: " + exception.getMessage());

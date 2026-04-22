@@ -6,6 +6,8 @@ import icewolf23x.chatBloom.model.FilteredToken;
 import icewolf23x.chatBloom.model.ProcessedMessage;
 import icewolf23x.chatBloom.util.TokenDecoration;
 import icewolf23x.chatBloom.util.TextSanitizer;
+import me.icewolf23.chatbloom.common.channel.ChannelScope;
+import me.icewolf23.chatbloom.common.network.ChatMessagePacket;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -14,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -141,6 +144,40 @@ public final class ChatService {
         Set<Player> bypassTargets = new LinkedHashSet<>(rendered.bypassTargets());
         bypassTargets.retainAll(recipients);
         notifyTargets(sender.getUniqueId(), sender.getName(), notificationTargets, bypassTargets);
+        if (channel.scope() == ChannelScope.NETWORK && plugin.services().networkBridge().isEnabled()) {
+            plugin.services().networkBridge().publishChat(new ChatMessagePacket(
+                sender.getUniqueId(),
+                sender.getName(),
+                plugin.services().bridgeServerId(),
+                channel.id(),
+                sanitized,
+                plugin.formats().rankPrefixTemplate(sender),
+                Instant.now()
+            ));
+        }
+        logConsole(channel.id(), finalMessage);
+    }
+
+    public void handleRemoteNetworkChat(ChatMessagePacket packet) {
+        var channel = plugin.services().channelService().findChannel(packet.channelId())
+            .orElseGet(() -> plugin.services().channelService().getDefaultChannel());
+        if (!channel.enabled() || channel.scope() != ChannelScope.NETWORK) {
+            return;
+        }
+        ProcessedMessage rendered = processRemoteSanitizedMessage(packet.plainText());
+        if (rendered.plainText().trim().isEmpty()) {
+            return;
+        }
+        Component finalMessage = plugin.formats().publicChatRemote(packet.senderName(), packet.rankPrefixTemplate(), rendered.component(), channel.id());
+        Set<Player> recipients = plugin.services().channelAudienceResolver().resolveRemoteRecipients(channel);
+        for (Player player : recipients) {
+            player.sendMessage(finalMessage);
+        }
+        Set<Player> notificationTargets = new LinkedHashSet<>(rendered.notificationTargets());
+        notificationTargets.retainAll(recipients);
+        Set<Player> bypassTargets = new LinkedHashSet<>(rendered.bypassTargets());
+        bypassTargets.retainAll(recipients);
+        notifyTargets(packet.senderId(), packet.senderName(), notificationTargets, bypassTargets);
         logConsole(channel.id(), finalMessage);
     }
 
@@ -150,14 +187,18 @@ public final class ChatService {
     }
 
     public ProcessedMessage processSanitizedMessage(Player sender, String sanitized) {
-        return processSanitizedMessage(sender, sender, sanitized, true);
+        return processSanitizedMessage(sender, sender, sanitized, true, false);
     }
 
     public ProcessedMessage processSanitizedMessage(CommandSender sender, String sanitized, boolean allowChatItems) {
-        return processSanitizedMessage(sender, sender instanceof Player player ? player : null, sanitized, allowChatItems);
+        return processSanitizedMessage(sender, sender instanceof Player player ? player : null, sanitized, allowChatItems, false);
     }
 
-    private ProcessedMessage processSanitizedMessage(CommandSender sender, Player playerContext, String sanitized, boolean allowChatItems) {
+    public ProcessedMessage processRemoteSanitizedMessage(String sanitized) {
+        return processSanitizedMessage(null, null, sanitized, false, true);
+    }
+
+    private ProcessedMessage processSanitizedMessage(CommandSender sender, Player playerContext, String sanitized, boolean allowChatItems, boolean remoteSender) {
         Map<String, Player> onlinePlayers = onlinePlayersByLowerName();
         Set<Player> notificationTargets = new LinkedHashSet<>();
         Set<Player> bypassTargets = new LinkedHashSet<>();
@@ -178,7 +219,7 @@ public final class ChatService {
                 continue;
             }
 
-            TokenRender tokenRender = renderCoreToken(sender, playerContext, decorated.core(), allowChatItems, onlinePlayers, notificationTargets, bypassTargets);
+            TokenRender tokenRender = renderCoreToken(sender, playerContext, decorated.core(), allowChatItems, remoteSender, onlinePlayers, notificationTargets, bypassTargets);
             parts.add(Component.text(decorated.prefix()).append(tokenRender.component()).append(Component.text(decorated.suffix())));
             plain.append(decorated.prefix()).append(tokenRender.plain()).append(decorated.suffix());
         }
@@ -192,6 +233,7 @@ public final class ChatService {
         Player playerContext,
         String core,
         boolean allowChatItems,
+        boolean remoteSender,
         Map<String, Player> onlinePlayers,
         Set<Player> notificationTargets,
         Set<Player> bypassTargets
@@ -200,7 +242,7 @@ public final class ChatService {
         String normalized = plainCore.toLowerCase(Locale.ROOT);
 
         CustomPingDefinition customPing = customPings.get(normalized);
-        if (customPing != null && isAllowedToUse(sender, customPing)) {
+        if (customPing != null && isAllowedToUse(sender, customPing, remoteSender)) {
             String displayTrigger = canonicalizeTrigger(customPing.trigger());
             Component rendered = plugin.formats().customPingToken(playerContext, customPing.tokenFormat(), displayTrigger);
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -295,8 +337,11 @@ public final class ChatService {
         plugin.getLogger().info("[CHAT:" + channelId + "] " + PlainTextComponentSerializer.plainText().serialize(component));
     }
 
-    private boolean isAllowedToUse(CommandSender sender, CustomPingDefinition definition) {
-        return definition.usePermission().isBlank() || sender.hasPermission(definition.usePermission());
+    private boolean isAllowedToUse(CommandSender sender, CustomPingDefinition definition, boolean remoteSender) {
+        if (remoteSender) {
+            return true;
+        }
+        return definition.usePermission().isBlank() || (sender != null && sender.hasPermission(definition.usePermission()));
     }
 
     private boolean canReceive(CustomPingDefinition definition, Player target) {
