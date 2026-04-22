@@ -31,6 +31,10 @@ public final class UnignoreCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
             return true;
         }
+        if (!plugin.configs().privacy().getBoolean("ignore.enabled", true)) {
+            player.sendMessage(plugin.formats().configMessage("privacy.ignore-disabled", player));
+            return true;
+        }
         if (args.length != 1) {
             player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/unignore <player>")));
             return true;

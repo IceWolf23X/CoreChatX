@@ -31,6 +31,10 @@ public final class IgnoreListCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
             return true;
         }
+        if (!plugin.configs().privacy().getBoolean("ignore.enabled", true)) {
+            player.sendMessage(plugin.formats().configMessage("privacy.ignore-disabled", player));
+            return true;
+        }
         List<String> names = plugin.services().privacyService().ignoredPlayers(player.getUniqueId()).stream()
             .map(this::nameOf)
             .sorted(String.CASE_INSENSITIVE_ORDER)

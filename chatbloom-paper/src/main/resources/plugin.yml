@@ -3,7 +3,7 @@ description: ${project.description}
 prefix: ChatBloom
 version: ${project.version}
 main: me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin
-api-version: '1.21.11'
+api-version: '1.21'
 load: POSTWORLD
 authors: [ IceWolf23X ]
 softdepend: [ PlaceholderAPI, LuckPerms ]

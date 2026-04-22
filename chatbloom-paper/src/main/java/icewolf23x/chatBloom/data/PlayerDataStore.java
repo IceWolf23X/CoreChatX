@@ -48,7 +48,7 @@ public final class PlayerDataStore {
     }
 
     public PlayerSettings get(UUID uuid) {
-        return cache.computeIfAbsent(uuid, ignored -> new PlayerSettings());
+        return cache.computeIfAbsent(uuid, ignored -> createDefaults());
     }
 
     public void save() {
@@ -71,5 +71,11 @@ public final class PlayerDataStore {
     public void save(UUID uuid) {
         get(uuid);
         save();
+    }
+
+    private PlayerSettings createDefaults() {
+        PlayerSettings settings = new PlayerSettings();
+        settings.setPmEnabled(plugin.configs().privacy().getBoolean("private-messages.enabled-by-default", true));
+        return settings;
     }
 }

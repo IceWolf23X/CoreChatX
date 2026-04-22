@@ -13,24 +13,35 @@ public final class DefaultPrivacyService implements PrivacyService {
 
     private final IgnoreRepository ignoreRepository;
     private final PlayerStateRepository playerStateRepository;
+    private final boolean ignoreEnabled;
 
-    public DefaultPrivacyService(IgnoreRepository ignoreRepository, PlayerStateRepository playerStateRepository) {
+    public DefaultPrivacyService(IgnoreRepository ignoreRepository, PlayerStateRepository playerStateRepository, boolean ignoreEnabled) {
         this.ignoreRepository = ignoreRepository;
         this.playerStateRepository = playerStateRepository;
+        this.ignoreEnabled = ignoreEnabled;
     }
 
     @Override
     public boolean isIgnoring(UUID actor, UUID target) {
+        if (!ignoreEnabled) {
+            return false;
+        }
         return ignoreRepository.loadIgnored(actor).contains(target);
     }
 
     @Override
     public Set<UUID> ignoredPlayers(UUID actor) {
+        if (!ignoreEnabled) {
+            return Set.of();
+        }
         return Set.copyOf(ignoreRepository.loadIgnored(actor));
     }
 
     @Override
     public void addIgnore(UUID actor, UUID target) {
+        if (!ignoreEnabled) {
+            return;
+        }
         Set<UUID> ignored = new HashSet<>(ignoreRepository.loadIgnored(actor));
         ignored.add(target);
         ignoreRepository.saveIgnored(actor, ignored);
@@ -38,6 +49,9 @@ public final class DefaultPrivacyService implements PrivacyService {
 
     @Override
     public void removeIgnore(UUID actor, UUID target) {
+        if (!ignoreEnabled) {
+            return;
+        }
         Set<UUID> ignored = new HashSet<>(ignoreRepository.loadIgnored(actor));
         ignored.remove(target);
         ignoreRepository.saveIgnored(actor, ignored);

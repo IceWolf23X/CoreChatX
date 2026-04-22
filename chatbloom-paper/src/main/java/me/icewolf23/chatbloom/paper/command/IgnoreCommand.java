@@ -31,6 +31,10 @@ public final class IgnoreCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
             return true;
         }
+        if (!plugin.configs().privacy().getBoolean("ignore.enabled", true)) {
+            player.sendMessage(plugin.formats().configMessage("privacy.ignore-disabled", player));
+            return true;
+        }
         if (args.length != 1) {
             player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/ignore <player>")));
             return true;
@@ -46,6 +50,11 @@ public final class IgnoreCommand implements TabExecutor {
         }
         if (plugin.services().privacyService().isIgnoring(player.getUniqueId(), target.getUniqueId())) {
             player.sendMessage(plugin.formats().configMessage("privacy.already-ignoring", player, Placeholder.unparsed("target_name", target.getName() == null ? args[0] : target.getName())));
+            return true;
+        }
+        int maxIgnored = Math.max(0, plugin.configs().privacy().getInt("ignore.max-ignored-players", 200));
+        if (maxIgnored > 0 && plugin.services().privacyService().ignoredPlayers(player.getUniqueId()).size() >= maxIgnored) {
+            player.sendMessage(plugin.formats().configMessage("privacy.ignore-limit", player, Placeholder.unparsed("limit", Integer.toString(maxIgnored))));
             return true;
         }
         plugin.services().privacyService().addIgnore(player.getUniqueId(), target.getUniqueId());

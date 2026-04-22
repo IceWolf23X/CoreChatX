@@ -24,6 +24,10 @@ public final class MuteChatCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.no-permission", sender instanceof Player player ? player : null));
             return true;
         }
+        if (!plugin.configs().moderation().getBoolean("mutechat.enabled", true)) {
+            sender.sendMessage(plugin.formats().configMessage("moderation.mutechat-disabled", sender instanceof Player player ? player : null));
+            return true;
+        }
         if (args.length != 0) {
             sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/mutechat")));
             return true;

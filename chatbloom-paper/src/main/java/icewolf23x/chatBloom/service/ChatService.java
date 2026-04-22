@@ -38,6 +38,7 @@ public final class ChatService {
     private String noMessageSentPath = "chat.no-message-sent";
     private boolean antiRepeatEnabled;
     private int antiRepeatWindow;
+    private boolean antiRepeatBlockIdentical;
     private boolean antiCapsEnabled;
     private int antiCapsMinLength;
     private double antiCapsMaxRatio;
@@ -52,6 +53,7 @@ public final class ChatService {
         this.mentionsEnabled = plugin.configuration().chat().getBoolean("mentions.enabled", true);
         this.antiRepeatEnabled = plugin.configs().moderation().getBoolean("anti-repeat.enabled", true);
         this.antiRepeatWindow = Math.max(1, plugin.configs().moderation().getInt("anti-repeat.similarity-window", 3));
+        this.antiRepeatBlockIdentical = plugin.configs().moderation().getBoolean("anti-repeat.block-identical", true);
         this.antiCapsEnabled = plugin.configs().moderation().getBoolean("anti-caps.enabled", false);
         this.antiCapsMinLength = Math.max(1, plugin.configs().moderation().getInt("anti-caps.min-length", 8));
         this.antiCapsMaxRatio = plugin.configs().moderation().getDouble("anti-caps.max-uppercase-ratio", 0.7D);
@@ -299,7 +301,7 @@ public final class ChatService {
     }
 
     private boolean shouldBlockAntiRepeat(Player sender, String normalizedPlain) {
-        if (!antiRepeatEnabled || normalizedPlain.isBlank() || sender.hasPermission("chatbloom.moderation.bypass.repeat")) {
+        if (!antiRepeatEnabled || !antiRepeatBlockIdentical || normalizedPlain.isBlank() || sender.hasPermission("chatbloom.moderation.bypass.repeat")) {
             return false;
         }
         Deque<String> history = recentMessages.computeIfAbsent(sender.getUniqueId(), ignored -> new ArrayDeque<>());

@@ -17,32 +17,51 @@ public final class DefaultModerationService implements ModerationService {
     private final MuteRepository muteRepository;
     private final GlobalStateRepository globalStateRepository;
     private final Clock clock;
+    private final boolean muteEnabled;
+    private final boolean muteChatEnabled;
     private boolean chatMuted;
 
-    public DefaultModerationService(MuteRepository muteRepository, GlobalStateRepository globalStateRepository, Clock clock) {
+    public DefaultModerationService(
+        MuteRepository muteRepository,
+        GlobalStateRepository globalStateRepository,
+        Clock clock,
+        boolean muteEnabled,
+        boolean muteChatEnabled
+    ) {
         this.muteRepository = muteRepository;
         this.globalStateRepository = globalStateRepository;
         this.clock = clock;
+        this.muteEnabled = muteEnabled;
+        this.muteChatEnabled = muteChatEnabled;
         this.chatMuted = globalStateRepository.load().chatMuted();
     }
 
     @Override
     public ModerationDecision evaluatePublicMessage(ChatPipelineContext context) {
+        if (!muteEnabled) {
+            return ModerationDecision.allow();
+        }
         return isMuted(context.senderId()) ? ModerationDecision.cancel("moderation.muted-public") : ModerationDecision.allow();
     }
 
     @Override
     public ModerationDecision evaluatePrivateMessage(ChatPipelineContext context) {
+        if (!muteEnabled) {
+            return ModerationDecision.allow();
+        }
         return isMuted(context.senderId()) ? ModerationDecision.cancel("moderation.muted-private") : ModerationDecision.allow();
     }
 
     @Override
     public boolean isChatMuted() {
-        return chatMuted;
+        return muteChatEnabled && chatMuted;
     }
 
     @Override
     public void setChatMuted(boolean muted) {
+        if (!muteChatEnabled) {
+            return;
+        }
         GlobalStateRecord current = globalStateRepository.load();
         this.chatMuted = muted;
         globalStateRepository.save(new GlobalStateRecord(current.firstJoinCount(), muted));
@@ -50,16 +69,25 @@ public final class DefaultModerationService implements ModerationService {
 
     @Override
     public boolean isMuted(UUID playerId) {
+        if (!muteEnabled) {
+            return false;
+        }
         return muteRepository.findActiveMute(playerId, Instant.now(clock)).isPresent();
     }
 
     @Override
     public void mute(UUID playerId, Instant until, String reason, UUID actorId) {
+        if (!muteEnabled) {
+            return;
+        }
         muteRepository.saveMute(new MuteRecord(playerId, until, reason, actorId));
     }
 
     @Override
     public void unmute(UUID playerId) {
+        if (!muteEnabled) {
+            return;
+        }
         muteRepository.clearMute(playerId);
     }
 }

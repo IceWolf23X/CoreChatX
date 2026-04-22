@@ -64,8 +64,18 @@ public final class ServiceRegistry {
     public void initialize() {
         this.eventBus = new SimpleEventBus();
         this.channelService = new DefaultChannelService(configRegistry.channels(), repositoryRegistry.activeChannelRepository());
-        this.privacyService = new DefaultPrivacyService(repositoryRegistry.ignoreRepository(), repositoryRegistry.playerStateRepository());
-        this.moderationService = new DefaultModerationService(repositoryRegistry.muteRepository(), repositoryRegistry.globalStateRepository(), Clock.systemUTC());
+        this.privacyService = new DefaultPrivacyService(
+            repositoryRegistry.ignoreRepository(),
+            repositoryRegistry.playerStateRepository(),
+            configRegistry.privacy().getBoolean("ignore.enabled", true)
+        );
+        this.moderationService = new DefaultModerationService(
+            repositoryRegistry.muteRepository(),
+            repositoryRegistry.globalStateRepository(),
+            Clock.systemUTC(),
+            configRegistry.moderation().getBoolean("mute.enabled", true),
+            configRegistry.moderation().getBoolean("mutechat.enabled", true)
+        );
         List<ChatPipelineStep> publicChatSteps = List.of(
             new ActiveChannelResolutionStep(channelService),
             new PublicModerationStep(moderationService)

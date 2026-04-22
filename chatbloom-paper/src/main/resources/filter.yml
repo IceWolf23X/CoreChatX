@@ -11,4 +11,4 @@ replacement-character: "*"
 
 hover-original:
   enabled: false
-  text: "<gray>Original term:</gray> <red>{word}</red>"Ric
+  text: "<gray>Original term:</gray> <red>{word}</red>"

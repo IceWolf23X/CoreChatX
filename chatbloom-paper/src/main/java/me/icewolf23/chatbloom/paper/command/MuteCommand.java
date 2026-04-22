@@ -34,6 +34,10 @@ public final class MuteCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.no-permission", sender instanceof Player player ? player : null));
             return true;
         }
+        if (!plugin.configs().moderation().getBoolean("mute.enabled", true)) {
+            sender.sendMessage(plugin.formats().configMessage("moderation.mute-disabled", sender instanceof Player player ? player : null));
+            return true;
+        }
         if (args.length < 1) {
             sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/mute <player> [duration] [reason...]")));
             return true;
