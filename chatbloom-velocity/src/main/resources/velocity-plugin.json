@@ -1,0 +1,10 @@
+{
+  "id": "chatbloom",
+  "name": "ChatBloom",
+  "version": "${project.version}",
+  "description": "Proxy-side foundation module for optional ChatBloom network mode.",
+  "authors": [
+    "IceWolf23X"
+  ],
+  "main": "me.icewolf23.chatbloom.velocity.bootstrap.ChatBloomVelocityPlugin"
+}

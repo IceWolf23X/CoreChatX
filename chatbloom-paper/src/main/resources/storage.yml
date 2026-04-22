@@ -1,0 +1,13 @@
+# Storage foundation for Run 1.
+# YAML remains the active backend in this phase.
+
+storage:
+  backend: "YAML"
+  sql:
+    enabled: false
+    type: "SQLITE"
+    host: "localhost"
+    port: 3306
+    database: "chatbloom"
+    username: "user"
+    password: "password"

@@ -1,0 +1,23 @@
+# Channel foundation for Run 1.
+# Standalone mode uses the existing global chat behavior by default.
+
+channels:
+  global:
+    enabled: true
+    default: true
+    scope: "SERVER"
+    permission-send: ""
+    permission-receive: ""
+  local:
+    enabled: true
+    default: false
+    scope: "RADIUS"
+    radius: 100
+    permission-send: "chatbloom.channel.local"
+    permission-receive: ""
+  staff:
+    enabled: true
+    default: false
+    scope: "SERVER"
+    permission-send: "chatbloom.channel.staff"
+    permission-receive: "chatbloom.staff"

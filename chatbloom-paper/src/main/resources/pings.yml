@@ -1,0 +1,32 @@
+# Mention and custom ping behaviour.
+
+mentions:
+  # Global switches for notification delivery once a target is selected.
+  notify-sound: true
+  notify-actionbar: true
+
+custom-pings:
+  # Each entry is generic and fully data-driven:
+  # trigger = visible token matched in chat
+  # use-permission = who may activate it
+  # receive-permission = who may be targeted; leave blank for everyone online
+  # bypass-toggle = if true, recipients are notified even when they disabled ping sound/actionbar
+  # token-format = how the token itself is rendered in chat
+  all:
+    trigger: "@all"
+    use-permission: "chatbloom.ping.use.all"
+    receive-permission: ""
+    bypass-toggle: false
+    token-format: "<#79d6b8>{trigger}</#79d6b8>"
+  help:
+    trigger: "@help"
+    use-permission: "chatbloom.ping.use.help"
+    receive-permission: "chatbloom.ping.receive.help"
+    bypass-toggle: false
+    token-format: "<#5aa9ff>{trigger}</#5aa9ff>"
+  staff:
+    trigger: "@staff"
+    use-permission: "chatbloom.ping.use.staff"
+    receive-permission: "chatbloom.staff"
+    bypass-toggle: true
+    token-format: "<#ff8f8f>{trigger}</#ff8f8f>"

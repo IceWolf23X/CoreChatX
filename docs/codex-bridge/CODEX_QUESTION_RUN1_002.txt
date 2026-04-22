@@ -1,0 +1,62 @@
+RUN:
+Run 1
+
+GOAL:
+Decide how far the package/bootstrap migration should go in Run 1 now that the multi-module split exists, without destabilizing standalone Paper mode or creating a half-renamed architecture that becomes harder to finish in later runs.
+
+FOUND:
+- The project is now split into `chatbloom-common`, `chatbloom-paper`, and `chatbloom-velocity`, and the root build compiles.
+- `chatbloom-common` already contains platform-neutral contracts/foundations under `me.icewolf23.chatbloom.common.*`.
+- `chatbloom-velocity` already uses the target namespace under `me.icewolf23.chatbloom.velocity.*`.
+- `chatbloom-paper` currently has a mixed state:
+- the new registries/foundations live under `me.icewolf23.chatbloom.paper.*`
+- the actual Paper runtime entrypoint is still `icewolf23x.chatBloom.ChatBloom`
+- most concrete commands, listeners, services, chatitem classes, hooks, config classes, and stores still live under `icewolf23x.chatBloom.*`
+- `chatbloom-paper/src/main/resources/plugin.yml` still points `main:` to `icewolf23x.chatBloom.ChatBloom`
+- `docs/ChatBloom_Program_Run1.md` and `docs/ChatBloom_Program_full.md` both describe the target Paper bootstrap as `me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin` with the new package structure as the intended steady-state.
+- The current mixed namespace is functionally acceptable for the conservative split, but it is also the clearest remaining architectural mismatch versus the Run 1 target docs.
+
+CURRENT PLAN:
+- Keep the already-working multi-module split intact.
+- Avoid a mass rename of all Paper classes in one unsafe pass.
+- Decide whether Run 1 should:
+- stop here with the mixed namespace and leave package cleanup for a later pass/run
+- or introduce a new `me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin` now and progressively move only the bootstrap-facing Paper surface behind it
+- or go further and move command/listener/platform packages to the target namespace during Run 1 while leaving deeper legacy services temporarily in place
+
+DOUBTS:
+1. In Run 1, should I already replace the legacy Paper plugin main with a new `me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin` and switch `plugin.yml` to that class, even if most operational logic still delegates to legacy `icewolf23x.chatBloom.*` classes underneath?
+2. If the answer is yes, which Paper-side layers are worth renaming/moving in Run 1 right now: only bootstrap/registries, or also commands/listeners/platform wrappers, or also concrete services/stores?
+3. Is a mixed namespace acceptable as the deliberate end-state of Run 1 if boundaries are otherwise correct, or would that leave too much architectural debt against Program_full/Run1?
+
+FILES / CLASSES INVOLVED:
+- `chatbloom-paper/src/main/resources/plugin.yml`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/ChatBloom.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ConfigRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/RepositoryRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ServiceRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/CommandRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ListenerRegistry.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/listener/ChatListener.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/command/*`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/*`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/data/*`
+- `docs/ChatBloom_Program_Run1.md`
+- `docs/ChatBloom_Program_full.md`
+
+CONSTRAINTS TO PRESERVE:
+- Standalone Paper mode must keep working end-to-end.
+- Proxy mode must remain optional and stub-safe.
+- No giant rename/refactor that obscures the real module and service boundaries.
+- No Bukkit/Paper leakage into `chatbloom-common`.
+- No mega-class bootstrap shortcut.
+- No feature creep into Run 2 / Run 3 scope.
+- Avoid creating a permanent confusing dual-bootstrap situation.
+
+WHAT I NEED BACK:
+- decisione pratica
+- cosa spostare / cosa non spostare nel Run 1
+- se il nuovo main class va introdotto subito oppure no
+- ordine consigliato del package/bootstrap cleanup
+- rischi
+- errori da evitare

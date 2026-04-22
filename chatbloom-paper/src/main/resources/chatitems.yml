@@ -1,0 +1,47 @@
+# Chat item token configuration.
+# Every token is matched on sanitized player text.
+# If the sender lacks the configured permission, the message is still sent
+# but that token stays plain text and no preview is created.
+
+tokens:
+  item:
+    # [item] upgrades to [shulker] automatically when the held item is a shulker box
+    # and the sender has chatbloom.chatitem.shulker.
+    # The snapshot stores the held item exactly as it looked when the message was sent.
+    aliases: [ "[item]", "[i]" ]
+    permission: "chatbloom.chatitem.item"
+    token-format: "<#79d6b8>[item]</#79d6b8>"
+    shulker-token-format: "<#5fc7c2>[shulker]</#5fc7c2>"
+  armor:
+    # Opens a read-only preview with helmet, chestplate, leggings, boots, and offhand.
+    aliases: [ "[armor]" ]
+    permission: "chatbloom.chatitem.armor"
+    token-format: "<#6fb6ff>[armor]</#6fb6ff>"
+  hotbar:
+    # Shows the first 9 inventory slots from the sender at message time.
+    aliases: [ "[hotbar]" ]
+    permission: "chatbloom.chatitem.hotbar"
+    token-format: "<#8bc8ff>[hotbar]</#8bc8ff>"
+  inventory:
+    # Includes the main inventory plus armor and offhand in a read-only snapshot.
+    aliases: [ "[inventory]", "[inv]" ]
+    permission: "chatbloom.chatitem.inventory"
+    token-format: "<#5aa9ff>[inventory]</#5aa9ff>"
+  enderchest:
+    # Opens the sender ender chest snapshot captured when the message was sent.
+    aliases: [ "[enderchest]", "[ender]", "[ec]" ]
+    permission: "chatbloom.chatitem.enderchest"
+    token-format: "<#7db8ff>[enderchest]</#7db8ff>"
+
+previews:
+  # Snapshots are ephemeral runtime data. Reload clears them to avoid mixing old and new state.
+  # Expired or cleared previews will no longer open from old chat messages.
+  expire-after-minutes: 30
+  titles:
+    # {player_name} is the owner of the saved snapshot, not the viewer who opens it.
+    item: "<#79d6b8>{player_name}'s item</#79d6b8>"
+    shulker: "<#5fc7c2>{player_name}'s shulker</#5fc7c2>"
+    armor: "<#6fb6ff>{player_name}'s armor</#6fb6ff>"
+    hotbar: "<#8bc8ff>{player_name}'s hotbar</#8bc8ff>"
+    inventory: "<#5aa9ff>{player_name}'s inventory</#5aa9ff>"
+    enderchest: "<#7db8ff>{player_name}'s ender chest</#7db8ff>"

@@ -1,0 +1,54 @@
+RUN:
+Run 1
+
+GOAL:
+Refactor the current single-module Paper-only ChatBloom codebase into the required Run 1 multi-module structure (`chatbloom-common`, `chatbloom-paper`, `chatbloom-velocity`) while preserving standalone Paper behavior and avoiding a destabilizing rewrite.
+
+FOUND:
+- The current codebase is still a single Maven module with one shaded Paper jar in `pom.xml`.
+- The current main bootstrap is `src/main/java/icewolf23x/chatBloom/ChatBloom.java`, which directly instantiates concrete config, storage, hooks, services, listeners, and commands.
+- Core chat flow currently lives in Paper-tied services such as `service/ChatService.java`, `service/PrivateMessageService.java`, `service/NotificationService.java`, and listener classes using Bukkit/Paper types directly.
+- Current persistence is concrete YAML storage through `data/PlayerDataStore.java` and `data/GlobalStateStore.java`, not repository abstractions.
+- Current config loading is file-specific and Paper-owned through `config/ConfigurationService.java`.
+- Run 1 requires repository abstractions, service contracts, an event bus, pipeline skeleton, deployment mode config, registries, and a compilable Velocity module.
+- Program_full and Run1 both require `chatbloom-common` to stay platform-neutral and explicitly forbid dumping Paper APIs into common.
+
+CURRENT PLAN:
+- Split the build into parent + `chatbloom-common` + `chatbloom-paper` + `chatbloom-velocity`.
+- Keep current behavior alive first inside `chatbloom-paper`.
+- Introduce common contracts and DTOs incrementally, then adapt current Paper services behind them.
+- Add deployment mode config, registries, repository interfaces, event bus, and pipeline skeleton without forcing proxy mode.
+- Keep proxy support structural only for Run 1.
+
+DOUBTS:
+1. For Run 1, should the first extraction to `chatbloom-common` be minimal and contract-focused (DTOs, interfaces, event bus, repository contracts, pipeline contracts), while leaving most existing feature logic inside `chatbloom-paper`, or do you want a more aggressive move of domain services out of Paper immediately?
+2. The current chat flow in `ChatService.java` mixes parsing, mention/custom ping resolution, notification target collection, and direct Bukkit recipient delivery. For Run 1, should this be split into a new common pipeline contract plus Paper adapters around existing logic, or should I keep the current service mostly intact and wrap it behind the new abstractions first?
+3. Current persistence uses `playerdata.yml` and `state.yml` with concrete stores. For Run 1, should I preserve these files through adapter repositories to avoid migration pain now, or should I already reshape persistence around the new repository model even if that changes internal file ownership early?
+
+FILES / CLASSES INVOLVED:
+- `pom.xml`
+- `src/main/java/icewolf23x/chatBloom/ChatBloom.java`
+- `src/main/java/icewolf23x/chatBloom/config/ConfigurationService.java`
+- `src/main/java/icewolf23x/chatBloom/data/PlayerDataStore.java`
+- `src/main/java/icewolf23x/chatBloom/data/GlobalStateStore.java`
+- `src/main/java/icewolf23x/chatBloom/service/ChatService.java`
+- `src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- `src/main/java/icewolf23x/chatBloom/service/NotificationService.java`
+- `src/main/java/icewolf23x/chatBloom/listener/ChatListener.java`
+- `src/main/java/icewolf23x/chatBloom/command/*`
+
+CONSTRAINTS TO PRESERVE:
+- Standalone Paper mode must remain functional throughout Run 1.
+- Proxy mode is optional and must not be forced.
+- No hot-switching deployment mode on `/chatbloom reload`.
+- No mega-class bootstrap shortcut.
+- No Paper/Bukkit API leakage into `chatbloom-common`.
+- No heavy domain logic dumped into listeners or commands.
+- Avoid feature creep beyond Run 1 foundations.
+
+WHAT I NEED BACK:
+- decisione pratica
+- cosa spostare / cosa non spostare
+- ordine consigliato
+- rischi
+- errori da evitare

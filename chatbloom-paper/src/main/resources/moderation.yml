@@ -1,0 +1,12 @@
+# Moderation foundation for Run 1.
+
+mute:
+  enabled: true
+
+anti-repeat:
+  enabled: true
+  similarity-window: 3
+  block-identical: true
+
+anti-caps:
+  enabled: false

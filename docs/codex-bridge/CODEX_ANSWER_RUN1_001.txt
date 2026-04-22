@@ -1,0 +1,148 @@
+RUN 1 ANSWER — ChatBloom Codex-Bridge
+
+Decision summary:
+Use a conservative Run 1 extraction.
+Move only contract-level and platform-neutral foundations into chatbloom-common first.
+Keep most current feature logic alive inside chatbloom-paper for Run 1.
+Do not aggressively migrate existing Paper services into common yet.
+
+Direct answers to the doubts:
+
+1) First extraction to common
+Yes: make the first extraction minimal and contract-focused.
+Move to chatbloom-common only:
+- deployment mode enum/config DTOs
+- repository interfaces
+- service interfaces/contracts
+- shared records/DTOs/enums needed by those contracts
+- event bus contracts + simple implementation
+- pipeline contracts/context/result/orchestrator
+- network packet DTOs / transport contracts / bridge contracts
+- shared constants/helpers that are truly platform-neutral
+
+Do NOT move yet:
+- Bukkit/Paper-aware services
+- listener logic
+- command implementations
+- hook integrations
+- chat item rendering/opening
+- recipient resolution based on Bukkit online players/worlds
+- notification delivery (sounds/actionbar/player sendMessage)
+- MiniMessage/Paper-specific rendering helpers if they depend on Paper context
+
+Reason:
+The current code is still strongly Paper-bound. ChatBloom.java directly wires concrete Paper services/stores/config loaders, and ChatService / PrivateMessageService still depend on Bukkit runtime objects and direct delivery. A big early move would create fake abstractions, risk regressions, and slow Run 1.
+
+2) ChatService split strategy
+Do NOT keep ChatService fully untouched.
+Do NOT try to fully decompose all chat domain logic into common in Run 1 either.
+
+Recommended Run 1 approach:
+- introduce the common pipeline contracts now
+- introduce a Paper pipeline/orchestrator implementation now
+- adapt the current ChatService into Paper-owned steps/adapters incrementally
+- keep Bukkit recipient delivery, notification dispatch, chat item token handling, and online player lookup in chatbloom-paper
+- move only pure message-state objects/contracts into common if they are cleanly platform-neutral
+
+Practical target for Run 1:
+- ChatListener becomes thin and delegates into a Paper pipeline entrypoint
+- ChatService stops being the only god-flow class
+- existing logic is split enough to fit the new architecture, but not fully rewritten
+
+Suggested first Paper-side step split:
+- sanitization step
+- moderation/cooldown gate step
+- token/message transformation step (mentions/custom pings/chatitems/filter), still Paper-owned if needed
+- render/final-message step
+- delivery step
+- notification/audit step
+
+Important:
+If a step still needs Player/Bukkit objects, keep that step in chatbloom-paper for Run 1.
+Do not force those pieces into common just because they are “chat logic”.
+
+3) Persistence strategy for playerdata.yml and state.yml
+Preserve the existing files in Run 1.
+Introduce repository abstractions on top of the current YAML files/stores instead of redesigning storage ownership immediately.
+
+Recommended Run 1 behavior:
+- keep playerdata.yml and state.yml valid
+- replace direct use of PlayerDataStore / GlobalStateStore with repository-backed adapters
+- the adapters may internally reuse the current YAML shape to avoid migration churn now
+- delay broader persistence reshaping to later work once module boundaries are stable
+
+Reason:
+Run 1 is about architecture and safe split, not storage migration.
+Changing module structure + bootstrap + contracts + storage ownership all at once is unnecessary risk.
+
+What to move now:
+
+Move to chatbloom-common now:
+- DeploymentMode + deployment settings DTO/config contract
+- repository contracts for player state / ignore / mute / global state as needed
+- service contracts for channel/privacy/moderation/network bridge foundation
+- pipeline context/result/step/orchestrator contracts
+- event bus interface + simple implementation
+- shared chat/network DTOs that are actually platform-neutral
+- basic enums/constants for future channel/privacy/moderation model
+
+Move to chatbloom-paper now:
+- existing plugin main bootstrap adapted into registries/bootstrap classes
+- current concrete config loading
+- YAML repository implementations/adapters
+- current chat/private message/notification logic behind new service boundaries
+- current listeners/commands, but thinner
+- current hook integrations
+- current chat item implementation
+
+Create in chatbloom-velocity now:
+- compilable plugin bootstrap skeleton
+- config/bootstrap/registry skeleton
+- network routing stubs only
+- no forced real feature completion yet
+
+What not to move now:
+- anything importing Bukkit/Paper APIs into common
+- delivery logic based on Bukkit.getOnlinePlayers()
+- sound/actionbar/player inventory GUI logic
+- PlaceholderAPI/LuckPerms/Paper hook code
+- command and listener classes into common
+- heavy refactor of PM/reply/socialspy behavior beyond wrapping/adapting
+
+Recommended order:
+
+1. Convert build to parent + common + paper + velocity.
+2. Move the current Paper plugin into chatbloom-paper with behavior preserved.
+3. Add chatbloom-common with only contracts/DTOs/event bus/pipeline/network foundations.
+4. Add chatbloom-velocity bootstrap skeleton that compiles.
+5. Introduce deployment mode config and restart-only mode policy.
+6. Introduce registries in paper bootstrap (config/repository/service/command/listener/bridge).
+7. Add repository interfaces in common.
+8. Adapt current PlayerDataStore / GlobalStateStore into paper YAML repository implementations or wrappers preserving current file formats.
+9. Add pipeline contracts in common and a first Paper orchestrator.
+10. Split ChatListener -> pipeline entrypoint.
+11. Break ChatService only as much as needed so delivery/notification/Bukkit-specific parts stay in paper and non-platform contracts are respected.
+12. Wrap PM flow similarly without redesigning all behavior.
+13. Compile all modules and verify standalone behavior before any deeper cleanup.
+
+Main risks:
+- moving too much feature logic into common too early and leaking Bukkit types
+- rewriting ChatService too deeply during the same run as the module split
+- silently changing YAML ownership/shape and breaking existing data
+- letting ChatBloom.java collapse into a new mega-bootstrap manager after the split
+- leaving listeners/commands fat because “real refactor comes later”
+
+Errors to avoid:
+- fake platform-neutral abstractions that still conceptually depend on Player/Bukkit state
+- introducing hot-switch deployment behavior on reload
+- forcing proxy assumptions into standalone runtime paths
+- renaming/changing persisted keys without migration strategy
+- attempting full channel/privacy/moderation completion in Run 1
+- hiding old logic under wrappers without actually creating real ownership boundaries
+
+Bottom line:
+Run 1 should be a real architectural split, but conservative on behavior movement.
+Extract foundations to common.
+Keep operational logic mostly in paper.
+Wrap current YAML storage through repositories.
+Refactor ChatService/PM flow enough to fit the new pipeline/service architecture, but do not do a full domain rewrite yet.

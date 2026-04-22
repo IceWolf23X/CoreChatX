@@ -1,0 +1,9 @@
+# Privacy foundation for Run 1.
+
+private-messages:
+  enabled-by-default: true
+  allow-staff-bypass: true
+
+ignore:
+  enabled: true
+  max-ignored-players: 200

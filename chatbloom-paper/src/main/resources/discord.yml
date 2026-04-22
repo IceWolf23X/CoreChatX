@@ -1,0 +1,7 @@
+# Discord bridge foundation for later runs.
+
+discord:
+  enabled: false
+  bot-token: ""
+  guild-id: ""
+  default-channel-id: ""

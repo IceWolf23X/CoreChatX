@@ -1,0 +1,6 @@
+# Telegram bridge foundation for later runs.
+
+telegram:
+  enabled: false
+  bot-token: ""
+  default-chat-id: ""
