@@ -22,12 +22,12 @@ public final class DefaultModerationService implements ModerationService {
 
     @Override
     public ModerationDecision evaluatePublicMessage(ChatPipelineContext context) {
-        return isMuted(context.senderId()) ? ModerationDecision.cancel("messages.muted") : ModerationDecision.allow();
+        return isMuted(context.senderId()) ? ModerationDecision.cancel("moderation.muted-public") : ModerationDecision.allow();
     }
 
     @Override
     public ModerationDecision evaluatePrivateMessage(ChatPipelineContext context) {
-        return isMuted(context.senderId()) ? ModerationDecision.cancel("messages.muted") : ModerationDecision.allow();
+        return isMuted(context.senderId()) ? ModerationDecision.cancel("moderation.muted-private") : ModerationDecision.allow();
     }
 
     @Override

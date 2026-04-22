@@ -1,6 +1,4 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-
-import icewolf23x.chatBloom.ChatBloom;
 import icewolf23x.chatBloom.data.GlobalStateStore;
 import icewolf23x.chatBloom.data.PlayerDataStore;
 import me.icewolf23.chatbloom.common.storage.repository.ActiveChannelRepository;
@@ -18,7 +16,7 @@ import java.io.File;
 
 public final class RepositoryRegistry {
 
-    private final ChatBloom plugin;
+    private final ChatBloomPaperPlugin plugin;
     private final ConfigRegistry configRegistry;
     private PlayerDataStore playerDataStore;
     private GlobalStateStore globalStateStore;
@@ -28,7 +26,7 @@ public final class RepositoryRegistry {
     private MuteRepository muteRepository;
     private ActiveChannelRepository activeChannelRepository;
 
-    public RepositoryRegistry(ChatBloom plugin, ConfigRegistry configRegistry) {
+    public RepositoryRegistry(ChatBloomPaperPlugin plugin, ConfigRegistry configRegistry) {
         this.plugin = plugin;
         this.configRegistry = configRegistry;
     }

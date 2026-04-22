@@ -2,7 +2,7 @@ name: ChatBloom
 description: ${project.description}
 prefix: ChatBloom
 version: ${project.version}
-main: icewolf23x.chatBloom.ChatBloom
+main: me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin
 api-version: '1.21.11'
 load: POSTWORLD
 authors: [ IceWolf23X ]
@@ -12,7 +12,7 @@ commands:
   chatbloom:
     description: Main ChatBloom command.
     aliases: [ cbloom ]
-    usage: /chatbloom <reload|item>
+    usage: /chatbloom <reload|settings|item>
   msg:
     description: Send a private message.
     aliases: [ tell, whisper, w ]
@@ -39,6 +39,9 @@ permissions:
     default: op
   chatbloom.command.reload:
     description: Reload ChatBloom configuration files.
+    default: op
+  chatbloom.command.settings:
+    description: Open the ChatBloom settings menu.
     default: op
   chatbloom.command.msg:
     description: Send private messages.

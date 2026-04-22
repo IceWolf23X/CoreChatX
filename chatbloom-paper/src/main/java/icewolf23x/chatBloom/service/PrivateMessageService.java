@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import me.icewolf23.chatbloom.common.pipeline.ChatPipelineContext;
 
 public final class PrivateMessageService {
 
@@ -37,6 +38,27 @@ public final class PrivateMessageService {
 
         if (senderPlayer != null && senderPlayer.getUniqueId().equals(target.getUniqueId())) {
             sender.sendMessage(plugin.formats().configMessage("errors.cannot-message-self", senderPlayer));
+            return false;
+        }
+
+        ChatPipelineContext moderationContext = new ChatPipelineContext(
+            senderPlayer == null ? new UUID(0L, 0L) : senderPlayer.getUniqueId(),
+            senderName,
+            rawMessage
+        );
+        var moderationDecision = plugin.services().moderationService().evaluatePrivateMessage(moderationContext);
+        if (!moderationDecision.allowed()) {
+            sender.sendMessage(plugin.formats().configMessage(moderationDecision.messageKey(), senderPlayer));
+            return false;
+        }
+
+        if (!plugin.services().privacyService().isPmEnabled(target.getUniqueId())) {
+            sender.sendMessage(plugin.formats().configMessage("private-messages.disabled-target", senderPlayer));
+            return false;
+        }
+
+        if (senderPlayer != null && plugin.services().privacyService().isIgnoring(target.getUniqueId(), senderPlayer.getUniqueId())) {
+            sender.sendMessage(plugin.formats().configMessage("private-messages.blocked-by-target", senderPlayer));
             return false;
         }
 

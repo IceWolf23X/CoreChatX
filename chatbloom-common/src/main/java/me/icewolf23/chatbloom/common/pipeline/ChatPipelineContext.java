@@ -9,6 +9,7 @@ public final class ChatPipelineContext {
     private final String senderName;
     private final String rawInput;
     private String sanitizedInput;
+    private String channelId;
     private Component renderedMessage;
     private boolean cancelled;
     private String cancelReasonKey;
@@ -38,6 +39,14 @@ public final class ChatPipelineContext {
 
     public void sanitizedInput(String sanitizedInput) {
         this.sanitizedInput = sanitizedInput;
+    }
+
+    public String channelId() {
+        return channelId;
+    }
+
+    public void channelId(String channelId) {
+        this.channelId = channelId;
     }
 
     public Component renderedMessage() {

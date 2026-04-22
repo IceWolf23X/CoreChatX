@@ -18,6 +18,10 @@ reload:
   success: "{prefix} <green>Reload complete.</green>"
   summary: "{prefix} <gray>Modules reloaded: chat, pings, PMs, filter, chat items, player data hooks.</gray>"
 
+moderation:
+  muted-public: "{prefix} <red>You are muted and cannot use public chat right now.</red>"
+  muted-private: "{prefix} <red>You are muted and cannot send private messages right now.</red>"
+
 cooldown:
   public: "{prefix} <yellow>You must wait <white>{seconds}</white> more second(s) before chatting again.</yellow>"
   pm: "{prefix} <yellow>You must wait <white>{seconds}</white> more second(s) before sending another private message.</yellow>"
@@ -40,6 +44,8 @@ private-messages:
   to-sender: "<dark_gray>[</dark_gray><light_purple>PM</light_purple><dark_gray>]</dark_gray> <gray>you -> </gray><white>{target_name}</white><dark_gray>: </dark_gray>{message}"
   to-target: "<dark_gray>[</dark_gray><light_purple>PM</light_purple><dark_gray>]</dark_gray> <white>{sender_name}</white><gray> -> you</gray><dark_gray>: </dark_gray>{message}"
   spy: "<dark_gray>[</dark_gray><red>SPY</red><dark_gray>]</dark_gray> <white>{sender_name}</white><gray> -> </gray><white>{target_name}</white><dark_gray>: </dark_gray>{message}"
+  disabled-target: "{prefix} <red>That player has private messages disabled.</red>"
+  blocked-by-target: "{prefix} <red>That player is not accepting messages from you.</red>"
   received-sound: "BLOCK_NOTE_BLOCK_BELL"
   received-volume: 0.85
   received-pitch: 1.1

@@ -28,6 +28,7 @@ public final class ChatBloomCommand implements TabExecutor {
                 return true;
             }
             sender.sendMessage("/chatbloom reload");
+            sender.sendMessage("/chatbloom settings");
             sender.sendMessage("/chatbloom item <uuid>");
             return true;
         }
@@ -52,6 +53,19 @@ public final class ChatBloomCommand implements TabExecutor {
                 }
                 sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "Reload failed: " + exception.getMessage())));
             }
+            return true;
+        }
+
+        if (args[0].equalsIgnoreCase("settings")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(plugin.formats().configMessage("errors.players-only", null));
+                return true;
+            }
+            if (!player.hasPermission("chatbloom.command.settings")) {
+                player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
+                return true;
+            }
+            player.openInventory(plugin.services().settingsMenuFactory().create(player, plugin.repositories().playerStateRepository().load(player.getUniqueId())));
             return true;
         }
 
@@ -86,6 +100,7 @@ public final class ChatBloomCommand implements TabExecutor {
         List<String> suggestions = new ArrayList<>();
         if (args.length == 1) {
             complete("reload", args[0], suggestions);
+            complete("settings", args[0], suggestions);
             complete("item", args[0], suggestions);
         }
         return suggestions;

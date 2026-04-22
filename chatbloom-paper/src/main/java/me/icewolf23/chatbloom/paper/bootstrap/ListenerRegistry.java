@@ -1,15 +1,15 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
 
-import icewolf23x.chatBloom.ChatBloom;
 import icewolf23x.chatBloom.listener.ChatListener;
 import icewolf23x.chatBloom.listener.ConnectionListener;
 import icewolf23x.chatBloom.listener.InventoryPreviewListener;
+import me.icewolf23.chatbloom.paper.gui.SettingsMenuListener;
 
 public final class ListenerRegistry {
 
-    private final ChatBloom plugin;
+    private final ChatBloomPaperPlugin plugin;
 
-    public ListenerRegistry(ChatBloom plugin) {
+    public ListenerRegistry(ChatBloomPaperPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -18,5 +18,6 @@ public final class ListenerRegistry {
         pluginManager.registerEvents(new ChatListener(plugin), plugin);
         pluginManager.registerEvents(new ConnectionListener(plugin), plugin);
         pluginManager.registerEvents(new InventoryPreviewListener(plugin), plugin);
+        pluginManager.registerEvents(new SettingsMenuListener(plugin.repositories().playerStateRepository(), plugin.services().settingsMenuFactory()), plugin);
     }
 }

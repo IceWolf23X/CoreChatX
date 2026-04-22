@@ -1,6 +1,5 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
 
-import icewolf23x.chatBloom.ChatBloom;
 import icewolf23x.chatBloom.command.BroadcastCommand;
 import icewolf23x.chatBloom.command.ChatBloomCommand;
 import icewolf23x.chatBloom.command.MessageCommand;
@@ -14,9 +13,9 @@ import java.util.Objects;
 
 public final class CommandRegistry {
 
-    private final ChatBloom plugin;
+    private final ChatBloomPaperPlugin plugin;
 
-    public CommandRegistry(ChatBloom plugin) {
+    public CommandRegistry(ChatBloomPaperPlugin plugin) {
         this.plugin = plugin;
     }
 

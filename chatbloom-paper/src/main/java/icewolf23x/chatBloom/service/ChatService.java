@@ -58,6 +58,10 @@ public final class ChatService {
         return publicChatEnabled;
     }
 
+    public ChatBloom plugin() {
+        return plugin;
+    }
+
     public void handlePublicChat(Player sender, String rawMessage) {
         if (!publicChatEnabled) {
             return;

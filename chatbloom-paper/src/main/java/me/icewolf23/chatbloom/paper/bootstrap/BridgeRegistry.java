@@ -1,16 +1,14 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-
-import icewolf23x.chatBloom.ChatBloom;
 import me.icewolf23.chatbloom.common.config.DeploymentMode;
 import me.icewolf23.chatbloom.paper.network.PaperNetworkBridge;
 
 public final class BridgeRegistry {
 
-    private final ChatBloom plugin;
+    private final ChatBloomPaperPlugin plugin;
     private final ConfigRegistry configRegistry;
     private final ServiceRegistry serviceRegistry;
 
-    public BridgeRegistry(ChatBloom plugin, ConfigRegistry configRegistry, ServiceRegistry serviceRegistry) {
+    public BridgeRegistry(ChatBloomPaperPlugin plugin, ConfigRegistry configRegistry, ServiceRegistry serviceRegistry) {
         this.plugin = plugin;
         this.configRegistry = configRegistry;
         this.serviceRegistry = serviceRegistry;

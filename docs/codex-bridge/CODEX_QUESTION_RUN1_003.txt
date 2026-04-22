@@ -1,0 +1,61 @@
+RUN:
+Run 1
+
+GOAL:
+Get a practical confirmation on whether Run 1 is now complete enough to stop and hand off cleanly to Run 2, or whether there is still one targeted architectural cleanup that should be done before opening Run 2 scope.
+
+FOUND:
+- The repo is now split into `chatbloom-common`, `chatbloom-paper`, and `chatbloom-velocity`.
+- Root multi-module build compiles successfully with `mvn -q -DskipTests package`.
+- Paper runtime entrypoint is now `me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin`.
+- `chatbloom-paper/src/main/resources/plugin.yml` points to the new main class.
+- The old `icewolf23x.chatBloom.ChatBloom` is no longer the runtime entrypoint; it is now an abstract compatibility base used by legacy Paper-owned feature classes.
+- Registries exist and are used in real Paper startup: `ConfigRegistry`, `RepositoryRegistry`, `ServiceRegistry`, `BridgeRegistry`, `CommandRegistry`, `ListenerRegistry`.
+- `chatbloom-common` contains platform-neutral foundations: deployment config, repository contracts, event bus, moderation/privacy/channel contracts, pipeline contracts, and network DTOs/stubs.
+- YAML repository adapters are live in `chatbloom-paper` for player state, global state, ignore, mute, and active channel persistence.
+- Paper-side pipeline is no longer a pure placeholder: there is a reusable common `DefaultChatPipeline`, a Paper `LegacyPaperChatPipeline`, and actual steps for active-channel resolution and public moderation.
+- PM flow now calls the privacy/moderation foundations before delivery.
+- A minimal settings GUI foundation exists (`/chatbloom settings`, menu factory, click listener, player-state persistence).
+- Velocity remains intentionally a compilable skeleton only, consistent with conservative Run 1 scope.
+
+CURRENT PLAN:
+- Stop large refactors here if Run 1 is already structurally complete enough.
+- Only do one more small cleanup before Run 2 if there is a clearly justified architectural reason.
+- Avoid opening Run 2 feature scope prematurely.
+
+DOUBTS:
+1. Given the current state, is Run 1 complete enough to freeze and hand off to Run 2, or is there still one targeted architectural cleanup you would strongly recommend doing first?
+2. Is keeping `icewolf23x.chatBloom.ChatBloom` as an abstract compatibility base acceptable as the end-state of Run 1, or should that class be eliminated before Run 2 begins?
+3. Are the current pipeline/privacy/moderation/settings foundations sufficient for Run 1, or is there one missing foundation that would make Run 2 materially cleaner if added now?
+
+FILES / CLASSES INVOLVED:
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ChatBloomPaperPlugin.java`
+- `chatbloom-paper/src/main/resources/plugin.yml`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/ChatBloom.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ConfigRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/RepositoryRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ServiceRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/pipeline/LegacyPaperChatPipeline.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/pipeline/PaperChatPipelineEntry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/gui/SettingsMenuFactory.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/gui/SettingsMenuListener.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- `docs/ChatBloom_Program_Run1.md`
+- `docs/ChatBloom_Program_full.md`
+
+CONSTRAINTS TO PRESERVE:
+- Standalone Paper mode must remain stable.
+- Proxy mode must remain optional and stub-safe.
+- No feature creep into Run 2 or Run 3 scope.
+- No mass package rename of legacy feature classes in Run 1.
+- No Bukkit/Paper leakage into `chatbloom-common`.
+- No mega-class bootstrap shortcut.
+- No destabilizing rewrite of existing user-facing behavior just to gain aesthetic consistency.
+
+WHAT I NEED BACK:
+- decisione pratica: Run1 chiuso oppure no
+- se c’è un ultimo cleanup da fare, quale
+- se il base class legacy può restare per ora oppure va rimosso prima del Run2
+- eventuale ordine consigliato per chiudere Run1 senza allargare scope
+- rischi
+- errori da evitare

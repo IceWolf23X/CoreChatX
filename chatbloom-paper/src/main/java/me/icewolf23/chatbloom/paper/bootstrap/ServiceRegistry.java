@@ -1,6 +1,4 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-
-import icewolf23x.chatBloom.ChatBloom;
 import icewolf23x.chatBloom.chatitem.ChatItemService;
 import icewolf23x.chatBloom.chatitem.SnapshotRegistry;
 import icewolf23x.chatBloom.service.ChatService;
@@ -16,19 +14,24 @@ import me.icewolf23.chatbloom.common.event.SimpleEventBus;
 import me.icewolf23.chatbloom.common.moderation.ModerationService;
 import me.icewolf23.chatbloom.common.network.NetworkBridge;
 import me.icewolf23.chatbloom.common.pipeline.ChatPipeline;
+import me.icewolf23.chatbloom.common.pipeline.ChatPipelineStep;
+import me.icewolf23.chatbloom.paper.gui.SettingsMenuFactory;
 import me.icewolf23.chatbloom.common.privacy.PrivacyService;
 import me.icewolf23.chatbloom.paper.network.PaperNetworkBridge;
+import me.icewolf23.chatbloom.paper.pipeline.ActiveChannelResolutionStep;
 import me.icewolf23.chatbloom.paper.pipeline.LegacyPaperChatPipeline;
 import me.icewolf23.chatbloom.paper.pipeline.PaperChatPipelineEntry;
+import me.icewolf23.chatbloom.paper.pipeline.PublicModerationStep;
 import me.icewolf23.chatbloom.paper.platform.DefaultChannelService;
 import me.icewolf23.chatbloom.paper.platform.DefaultModerationService;
 import me.icewolf23.chatbloom.paper.platform.DefaultPrivacyService;
 
 import java.time.Clock;
+import java.util.List;
 
 public final class ServiceRegistry {
 
-    private final ChatBloom plugin;
+    private final ChatBloomPaperPlugin plugin;
     private final ConfigRegistry configRegistry;
     private final RepositoryRegistry repositoryRegistry;
     private EventBus eventBus;
@@ -38,6 +41,7 @@ public final class ServiceRegistry {
     private ChatPipeline chatPipeline;
     private PaperChatPipelineEntry chatPipelineEntry;
     private NetworkBridge networkBridge;
+    private SettingsMenuFactory settingsMenuFactory;
     private WordFilterService wordFilterService;
     private LegacyFormattingService legacyFormattingService;
     private CooldownService cooldownService;
@@ -48,7 +52,7 @@ public final class ServiceRegistry {
     private ChatService chatService;
     private PrivateMessageService privateMessageService;
 
-    public ServiceRegistry(ChatBloom plugin, ConfigRegistry configRegistry, RepositoryRegistry repositoryRegistry) {
+    public ServiceRegistry(ChatBloomPaperPlugin plugin, ConfigRegistry configRegistry, RepositoryRegistry repositoryRegistry) {
         this.plugin = plugin;
         this.configRegistry = configRegistry;
         this.repositoryRegistry = repositoryRegistry;
@@ -59,6 +63,10 @@ public final class ServiceRegistry {
         this.channelService = new DefaultChannelService(configRegistry.channels(), repositoryRegistry.activeChannelRepository());
         this.privacyService = new DefaultPrivacyService(repositoryRegistry.ignoreRepository(), repositoryRegistry.playerStateRepository());
         this.moderationService = new DefaultModerationService(repositoryRegistry.muteRepository(), Clock.systemUTC());
+        List<ChatPipelineStep> publicChatSteps = List.of(
+            new ActiveChannelResolutionStep(channelService),
+            new PublicModerationStep(moderationService)
+        );
         this.wordFilterService = new WordFilterService(plugin);
         this.legacyFormattingService = new LegacyFormattingService(plugin);
         this.cooldownService = new CooldownService(plugin);
@@ -68,9 +76,10 @@ public final class ServiceRegistry {
         this.notificationService = new NotificationService(plugin);
         this.chatService = new ChatService(plugin);
         this.privateMessageService = new PrivateMessageService(plugin);
-        this.chatPipeline = new LegacyPaperChatPipeline();
+        this.chatPipeline = new LegacyPaperChatPipeline(publicChatSteps);
         this.chatPipelineEntry = new PaperChatPipelineEntry(chatPipeline, chatService);
         this.networkBridge = new PaperNetworkBridge(false);
+        this.settingsMenuFactory = new SettingsMenuFactory();
     }
 
     public void reload() {
@@ -110,6 +119,10 @@ public final class ServiceRegistry {
 
     public void networkBridge(NetworkBridge networkBridge) {
         this.networkBridge = networkBridge;
+    }
+
+    public SettingsMenuFactory settingsMenuFactory() {
+        return settingsMenuFactory;
     }
 
     public WordFilterService wordFilterService() {

@@ -1,0 +1,124 @@
+Decisione pratica
+
+1. Introdurre subito il nuovo main class `me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin`.
+2. Aggiornare subito `chatbloom-paper/src/main/resources/plugin.yml` per puntare a quel main class.
+3. Usare il nuovo main come unico entrypoint Paper reale di Run 1.
+4. Mantenere sotto di esso gran parte della feature logic attuale ancora nei package legacy `icewolf23x.chatBloom.*` dove serve, tramite delega controllata.
+5. Non fare in Run 1 una rinomina massiva di commands/listeners/services/stores solo per coerenza estetica.
+
+Cosa spostare in Run 1
+
+Spostare/adottare ora:
+- `ChatBloomPaperPlugin` nel namespace target `me.icewolf23.chatbloom.paper.bootstrap`
+- `plugin.yml` -> `main: me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin`
+- bootstrap registries già introdotti (`ConfigRegistry`, `RepositoryRegistry`, `ServiceRegistry`, `BridgeRegistry`, `CommandRegistry`, `ListenerRegistry`)
+- eventuali piccoli wrapper Paper-specifici strettamente bootstrap-facing o platform-facing se il move è meccanico e a basso rischio
+- eventuale interfaccia/facade minima per esporre dal nuovo main solo ciò che serve ai legacy classes, se utile per ridurre accoppiamento diretto
+
+Non spostare ora:
+- bulk rename di `icewolf23x.chatBloom.command.*`
+- bulk rename di `icewolf23x.chatBloom.listener.*`
+- bulk rename di `icewolf23x.chatBloom.service.*`
+- bulk rename di `icewolf23x.chatBloom.data.*`
+- bulk rename di `chatitem`, `hook`, `config` legacy, salvo micro-move mirati e sicuri
+- qualsiasi refactor profondo che cambi insieme package + responsabilità + comportamento
+
+Nuovo main class: sì o no
+
+Sì: va introdotto subito in Run 1.
+
+Motivo:
+- il multi-module split esiste già
+- `chatbloom-velocity` è già nel namespace target
+- `chatbloom-common` è già nel namespace target
+- lasciare `plugin.yml` e runtime entrypoint sul main legacy come end-state di Run 1 lascia un disallineamento architetturale troppo visibile
+- il vero rischio non è introdurre il nuovo main; il vero rischio è introdurre il nuovo main e contemporaneamente rinominare tutto il resto
+
+Quindi:
+- nuovo main sì
+- dual bootstrap no
+- mass rename no
+
+Ordine consigliato
+
+1. Creare `me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin`.
+2. Spostare dentro quel main la logica di bootstrap che oggi sta in `icewolf23x.chatBloom.ChatBloom`.
+3. Aggiornare `plugin.yml` al nuovo main.
+4. Far sì che i registri nuovi dipendano dal nuovo main/plugin type, non più dal vecchio `icewolf23x.chatBloom.ChatBloom`.
+5. Tenere il vecchio `icewolf23x.chatBloom.ChatBloom` solo come classe temporanea interna se strettamente necessario per compilare durante la transizione, ma non più come entrypoint registrato.
+6. Se possibile nello stesso Run 1, eliminare del tutto il vecchio main class legacy una volta che il nuovo bootstrap compila e avvia correttamente.
+7. Lasciare commands/listeners/services/stores nei package legacy per ora, registrati però dal nuovo bootstrap/registries.
+8. Fare solo eventuali move aggiuntivi molto piccoli e meccanici su wrapper/platform classes, non sui servizi core.
+9. Verificare startup standalone, reload, PM, chat pubblica, pings, chatitems, socialspy.
+
+Confine raccomandato del cleanup Run 1
+
+Da portare nel namespace target in Run 1:
+- entrypoint bootstrap
+- registries
+- bootstrap-adjacent classes
+- eventuali paper platform adapters piccoli
+
+Da lasciare legacy fino a Run 2 o Run 3:
+- command implementations concrete
+- listener implementations concrete
+- service implementations concrete
+- YAML stores concreti
+- chatitem internals
+- hook internals
+
+Valutazione della mixed namespace
+
+Mixed namespace è accettabile solo come stato transitorio interno a Run 1.
+Non è un buon end-state deliberato di fine Run 1 se:
+- `plugin.yml` punta ancora al main legacy
+- esistono due bootstrap concorrenti o poco chiari
+- i registri nuovi dipendono ancora strutturalmente dal vecchio main type senza un piano immediato di uscita
+
+Un end-state accettabile di Run 1 è invece:
+- entrypoint Paper nuovo e unico nel namespace target
+- registri nuovi in uso reale
+- confini modulo/layer corretti
+- parte della feature logic ancora legacy sotto il cofano, ma chiaramente subordinata al nuovo bootstrap
+
+Rischi principali
+
+1. Rinominare troppo presto commands/listeners/services/stores:
+- alto rischio regressioni
+- diff enorme
+- review difficile
+- più attrito per Run 2
+
+2. Lasciare il main legacy come entrypoint fino a fine Run 1:
+- architettura apparentemente “mezzo migrata”
+- confusione sul bootstrap reale
+- debito inutile sul punto più visibile del modulo Paper
+
+3. Tenere sia vecchio che nuovo bootstrap come reali candidati runtime:
+- dual ownership
+- rischio di drift
+- debugging più sporco
+- peggio di una migrazione incompleta ma lineare
+
+Errori da evitare
+
+- non fare una grande rinomina cosmetica
+- non spostare in `common` codice Paper per “comodità”
+- non lasciare `plugin.yml` sul main legacy come soluzione finale di Run 1
+- non creare adapter annidati inutili solo per far convivere due bootstrap
+- non fondere registri nuovi e vecchio main in una pseudo mega-classe
+- non cambiare contemporaneamente package, API interna e comportamento dei servizi core
+- non trattare commands/listeners legacy come se dovessero già essere “puliti finali” in Run 1
+
+Sintesi operativa per Codex
+
+Run 1 deve uscire con:
+- multi-module già presente
+- Paper entrypoint reale nel namespace target
+- registries reali nel namespace target
+- nessun dual-bootstrap permanente
+- servizi/commands/listeners/stores legacy ancora tollerati sotto il bootstrap nuovo
+- nessuna rinomina massiva oltre il bootstrap-facing surface
+
+Formula pratica:
+“migrare il tetto e i punti di ingresso adesso, non svuotare tutta la casa in Run 1”.

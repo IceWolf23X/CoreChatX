@@ -1,6 +1,4 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-
-import icewolf23x.chatBloom.ChatBloom;
 import icewolf23x.chatBloom.config.ConfigurationService;
 import me.icewolf23.chatbloom.common.config.DeploymentConfig;
 import me.icewolf23.chatbloom.common.config.DeploymentMode;
@@ -11,7 +9,7 @@ import java.io.File;
 
 public final class ConfigRegistry {
 
-    private final ChatBloom plugin;
+    private final ChatBloomPaperPlugin plugin;
     private ConfigurationService configurationService;
     private FileConfiguration channels;
     private FileConfiguration privacy;
@@ -21,7 +19,7 @@ public final class ConfigRegistry {
     private FileConfiguration telegram;
     private DeploymentConfig deployment;
 
-    public ConfigRegistry(ChatBloom plugin) {
+    public ConfigRegistry(ChatBloomPaperPlugin plugin) {
         this.plugin = plugin;
     }
 

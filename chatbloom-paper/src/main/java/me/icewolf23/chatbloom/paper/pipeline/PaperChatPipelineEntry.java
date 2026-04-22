@@ -18,8 +18,12 @@ public final class PaperChatPipelineEntry {
     public void handlePublicChat(Player player, String rawMessage) {
         ChatPipelineContext context = new ChatPipelineContext(player.getUniqueId(), player.getName(), rawMessage);
         var result = chatPipeline.execute(context);
-        if (result.successful()) {
-            chatService.handlePublicChat(player, context.rawInput());
+        if (!result.successful()) {
+            if (result.cancelReasonKey() != null && !result.cancelReasonKey().isBlank()) {
+                player.sendMessage(chatService.plugin().formats().configMessage(result.cancelReasonKey(), player));
+            }
+            return;
         }
+        chatService.handlePublicChat(player, context.rawInput());
     }
 }
