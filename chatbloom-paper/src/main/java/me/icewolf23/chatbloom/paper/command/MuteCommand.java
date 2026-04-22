@@ -46,10 +46,14 @@ public final class MuteCommand implements TabExecutor {
         Instant expiresAt = null;
         int reasonStart = 1;
         if (args.length >= 2) {
-            Instant parsed = parseDuration(args[1]);
-            if (parsed != null) {
-                expiresAt = parsed;
+            if (args[1].equalsIgnoreCase("permanent")) {
                 reasonStart = 2;
+            } else {
+                Instant parsed = parseDuration(args[1]);
+                if (parsed != null) {
+                    expiresAt = parsed;
+                    reasonStart = 2;
+                }
             }
         }
         String reason = reasonStart < args.length

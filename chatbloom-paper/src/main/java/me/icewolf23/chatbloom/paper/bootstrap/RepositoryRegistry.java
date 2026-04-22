@@ -17,7 +17,6 @@ import java.io.File;
 public final class RepositoryRegistry {
 
     private final ChatBloomPaperPlugin plugin;
-    private final ConfigRegistry configRegistry;
     private PlayerDataStore playerDataStore;
     private GlobalStateStore globalStateStore;
     private PlayerStateRepository playerStateRepository;
@@ -28,7 +27,6 @@ public final class RepositoryRegistry {
 
     public RepositoryRegistry(ChatBloomPaperPlugin plugin, ConfigRegistry configRegistry) {
         this.plugin = plugin;
-        this.configRegistry = configRegistry;
     }
 
     public void initialize() {

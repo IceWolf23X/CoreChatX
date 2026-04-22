@@ -28,6 +28,10 @@ public final class PmToggleCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
             return true;
         }
+        if (args.length != 0) {
+            player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/pmtoggle")));
+            return true;
+        }
         boolean enabled = !plugin.services().privacyService().isPmEnabled(player.getUniqueId());
         plugin.services().privacyService().setPmEnabled(player.getUniqueId(), enabled);
         player.sendMessage(plugin.formats().configMessage("privacy.pm-toggled", player, Placeholder.component("state", plugin.formats().configMessage(enabled ? "ping.state-on" : "ping.state-off", player))));

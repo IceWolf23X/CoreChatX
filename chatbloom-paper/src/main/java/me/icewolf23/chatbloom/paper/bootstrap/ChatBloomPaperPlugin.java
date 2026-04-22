@@ -41,6 +41,9 @@ public final class ChatBloomPaperPlugin extends ChatBloom {
 
     @Override
     public void onDisable() {
+        if (bridgeRegistry != null) {
+            bridgeRegistry.shutdown();
+        }
         boolean autoSave = configRegistry == null || configuration().main().getBoolean("player-data.auto-save-on-disable", true);
         if (repositoryRegistry != null && autoSave) {
             repositoryRegistry.shutdown();

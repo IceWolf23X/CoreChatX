@@ -30,9 +30,17 @@ public final class YamlActiveChannelRepository implements ActiveChannelRepositor
 
     private void saveNow() {
         try {
+            ensureParentDirectory();
             yaml.save(file);
         } catch (IOException exception) {
-            throw new IllegalStateException("Unable to save channeldata.yml", exception);
+            throw new IllegalStateException("Unable to save active channel data to " + file.getAbsolutePath(), exception);
+        }
+    }
+
+    private void ensureParentDirectory() {
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IllegalStateException("Unable to create directory " + parent.getAbsolutePath());
         }
     }
 }

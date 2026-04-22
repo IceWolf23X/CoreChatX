@@ -1,6 +1,7 @@
 package me.icewolf23.chatbloom.paper.command;
 
 import icewolf23x.chatBloom.ChatBloom;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -25,6 +26,10 @@ public final class ChatSettingsCommand implements TabExecutor {
         }
         if (!player.hasPermission("chatbloom.command.settings")) {
             player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
+            return true;
+        }
+        if (args.length != 0) {
+            player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/chatsettings")));
             return true;
         }
         player.openInventory(plugin.services().settingsMenuFactory().create(player, plugin.repositories().playerStateRepository().load(player.getUniqueId())));

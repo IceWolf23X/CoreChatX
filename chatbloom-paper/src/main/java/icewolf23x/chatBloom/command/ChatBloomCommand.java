@@ -91,7 +91,7 @@ public final class ChatBloomCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.no-permission", sender instanceof Player player ? player : null));
             return true;
         }
-        sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/chatbloom <reload|item>")));
+        sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/chatbloom <reload|settings|item>")));
         return true;
     }
 

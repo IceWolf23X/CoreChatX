@@ -26,6 +26,10 @@ public final class ClearChatCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.no-permission", sender instanceof Player player ? player : null));
             return true;
         }
+        if (args.length != 0) {
+            sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/clearchat")));
+            return true;
+        }
         for (Player player : Bukkit.getOnlinePlayers()) {
             for (int index = 0; index < 100; index++) {
                 player.sendMessage(Component.empty());

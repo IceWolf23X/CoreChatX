@@ -13,13 +13,14 @@ import java.util.List;
 public final class SettingsMenuFactory {
 
     public static final String TITLE = "ChatBloom Settings";
+    private static final int SIZE = 27;
     public static final int SLOT_PING_SOUND = 10;
     public static final int SLOT_PING_ACTIONBAR = 11;
     public static final int SLOT_PRIVATE_MESSAGES = 12;
     public static final int SLOT_SOCIAL_SPY = 13;
 
     public Inventory create(Player player, PlayerSettingsRecord state) {
-        Inventory inventory = Bukkit.createInventory(null, 27, TITLE);
+        Inventory inventory = Bukkit.createInventory(null, SIZE, TITLE);
         inventory.setItem(SLOT_PING_SOUND, toggleItem(Material.NOTE_BLOCK, "Ping Sound", state.pingSoundEnabled()));
         inventory.setItem(SLOT_PING_ACTIONBAR, toggleItem(Material.PAPER, "Ping Actionbar", state.pingActionbarEnabled()));
         inventory.setItem(SLOT_PRIVATE_MESSAGES, toggleItem(Material.WRITABLE_BOOK, "Private Messages", state.pmEnabled()));

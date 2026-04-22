@@ -39,9 +39,17 @@ public final class YamlIgnoreRepository implements IgnoreRepository {
 
     private void saveNow() {
         try {
+            ensureParentDirectory();
             yaml.save(file);
         } catch (IOException exception) {
-            throw new IllegalStateException("Unable to save ignoredata.yml", exception);
+            throw new IllegalStateException("Unable to save ignore data to " + file.getAbsolutePath(), exception);
+        }
+    }
+
+    private void ensureParentDirectory() {
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            throw new IllegalStateException("Unable to create directory " + parent.getAbsolutePath());
         }
     }
 }

@@ -22,7 +22,12 @@ public final class BridgeRegistry {
         Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin);
         Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin);
         boolean proxyMode = configRegistry.deployment().mode() == DeploymentMode.PROXY;
-        String serverId = configRegistry.configurationService().main().getString("deployment.proxy.server-id", "paper-backend");
+        String configuredServerId = configRegistry.configurationService().main().getString("deployment.proxy.server-id", "paper-backend");
+        String serverId = configuredServerId == null ? "" : configuredServerId.trim();
+        if (serverId.isEmpty()) {
+            serverId = "paper-backend";
+            plugin.getLogger().warning("deployment.proxy.server-id is blank. Falling back to '" + serverId + "'.");
+        }
         PaperNetworkBridge bridge = new PaperNetworkBridge(plugin, proxyMode, PROXY_CHANNEL, serverId);
         serviceRegistry.networkBridge(bridge);
         serviceRegistry.bridgeServerId(serverId);
@@ -44,5 +49,10 @@ public final class BridgeRegistry {
 
     public void reload() {
         initialize();
+    }
+
+    public void shutdown() {
+        Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin);
+        Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin);
     }
 }

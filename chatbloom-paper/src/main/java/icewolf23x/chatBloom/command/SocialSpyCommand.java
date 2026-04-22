@@ -2,6 +2,7 @@ package icewolf23x.chatBloom.command;
 
 import icewolf23x.chatBloom.ChatBloom;
 import icewolf23x.chatBloom.data.PlayerSettings;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -25,6 +26,10 @@ public final class SocialSpyCommand implements TabExecutor {
         }
         if (!player.hasPermission("chatbloom.command.socialspy")) {
             player.sendMessage(plugin.formats().configMessage("errors.no-permission", player));
+            return true;
+        }
+        if (args.length != 0) {
+            player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/socialspy")));
             return true;
         }
         PlayerSettings settings = plugin.playerData().get(player.getUniqueId());

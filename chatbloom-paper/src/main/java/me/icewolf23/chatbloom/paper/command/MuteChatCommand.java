@@ -24,6 +24,10 @@ public final class MuteChatCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.no-permission", sender instanceof Player player ? player : null));
             return true;
         }
+        if (args.length != 0) {
+            sender.sendMessage(plugin.formats().configMessage("errors.invalid-usage", sender instanceof Player player ? player : null, Placeholder.unparsed("usage", "/mutechat")));
+            return true;
+        }
         boolean muted = !plugin.services().moderationService().isChatMuted();
         plugin.services().moderationService().setChatMuted(muted);
         sender.sendMessage(plugin.formats().configMessage("moderation.chat-muted-toggled", sender instanceof Player player ? player : null, Placeholder.component("state", plugin.formats().configMessage(muted ? "ping.state-on" : "ping.state-off", sender instanceof Player player ? player : null))));

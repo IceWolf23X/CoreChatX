@@ -8,7 +8,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public final class DefaultChannelService implements ChannelService {
 
-    private final Map<String, ChatChannel> channels = new HashMap<>();
+    private final Map<String, ChatChannel> channels = new LinkedHashMap<>();
     private final ActiveChannelRepository activeChannelRepository;
 
     public DefaultChannelService(FileConfiguration configuration, ActiveChannelRepository activeChannelRepository) {
@@ -26,6 +26,9 @@ public final class DefaultChannelService implements ChannelService {
 
     @Override
     public Optional<ChatChannel> findChannel(String id) {
+        if (id == null || id.isBlank()) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(channels.get(id.toLowerCase(Locale.ROOT)));
     }
 
@@ -39,7 +42,7 @@ public final class DefaultChannelService implements ChannelService {
         return channels.values().stream()
             .filter(ChatChannel::defaultChannel)
             .findFirst()
-            .orElseGet(() -> new ChatChannel("global", true, true, ChannelScope.SERVER, null, "", ""));
+            .orElseGet(() -> new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", ""));
     }
 
     @Override
@@ -71,7 +74,7 @@ public final class DefaultChannelService implements ChannelService {
         channels.clear();
         ConfigurationSection section = configuration.getConfigurationSection("channels");
         if (section == null) {
-            channels.put("global", new ChatChannel("global", true, true, ChannelScope.SERVER, null, "", ""));
+            channels.put("global", new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", ""));
             return;
         }
         for (String key : section.getKeys(false)) {
@@ -91,7 +94,7 @@ public final class DefaultChannelService implements ChannelService {
             channels.put(key.toLowerCase(Locale.ROOT), new ChatChannel(key, enabled, defaultChannel, scope, radius, sendPermission, receivePermission));
         }
         if (channels.values().stream().noneMatch(ChatChannel::defaultChannel)) {
-            channels.put("global", new ChatChannel("global", true, true, ChannelScope.SERVER, null, "", ""));
+            channels.put("global", new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", ""));
         }
     }
 }

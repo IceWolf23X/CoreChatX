@@ -90,7 +90,13 @@ public final class ChatBloomVelocityPlugin {
             if (registeredServer.getPlayersConnected().isEmpty()) {
                 continue;
             }
-            registeredServer.sendPluginMessage(CHANNEL, payload);
+            if (!registeredServer.sendPluginMessage(CHANNEL, payload)) {
+                logger.warn("ChatBloom proxy fanout to backend '{}' failed for channel '{}' from source backend '{}'.",
+                    registeredServer.getServerInfo().getName(),
+                    packet.channelId(),
+                    packet.serverId()
+                );
+            }
         }
     }
 
@@ -140,7 +146,24 @@ public final class ChatBloomVelocityPlugin {
             packet.senderBypass(),
             packet.sentAt()
         );
-        targetConnection.get().getServer().sendPluginMessage(CHANNEL, PluginMessageCodec.encodePrivateMessage(ProxyMessageType.PM_DELIVER_TO_TARGET, deliverPacket));
+        if (!targetConnection.get().getServer().sendPluginMessage(CHANNEL, PluginMessageCodec.encodePrivateMessage(ProxyMessageType.PM_DELIVER_TO_TARGET, deliverPacket))) {
+            logger.warn("ChatBloom proxy failed to deliver PM request {} to backend '{}' for target '{}'.",
+                packet.requestId(),
+                targetConnection.get().getServer().getServerInfo().getName(),
+                target.get().getUsername()
+            );
+            sendPrivateMessageResult(new PrivateMessageResultPacket(
+                packet.requestId(),
+                packet.sourceServerId(),
+                packet.senderId(),
+                target.get().getUniqueId(),
+                target.get().getUsername(),
+                packet.plainText(),
+                false,
+                "private-messages.remote-unavailable",
+                Instant.now()
+            ));
+        }
     }
 
     private void routePrivateMessageResult(PrivateMessageResultPacket packet) {
@@ -148,8 +171,16 @@ public final class ChatBloomVelocityPlugin {
     }
 
     private void sendPrivateMessageResult(PrivateMessageResultPacket packet) {
-        proxyServer.getServer(packet.sourceServerId()).ifPresent(server ->
-            server.sendPluginMessage(CHANNEL, PluginMessageCodec.encodePrivateMessageResult(packet))
-        );
+        proxyServer.getServer(packet.sourceServerId()).ifPresentOrElse(server -> {
+            if (!server.sendPluginMessage(CHANNEL, PluginMessageCodec.encodePrivateMessageResult(packet))) {
+                logger.warn("ChatBloom proxy failed to return PM result {} to source backend '{}'.",
+                    packet.requestId(),
+                    packet.sourceServerId()
+                );
+            }
+        }, () -> logger.warn("ChatBloom proxy could not return PM result {} because source backend '{}' is not registered.",
+            packet.requestId(),
+            packet.sourceServerId()
+        ));
     }
 }

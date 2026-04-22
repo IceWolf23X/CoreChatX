@@ -2,6 +2,8 @@ package me.icewolf23.chatbloom.paper.gui;
 
 import me.icewolf23.chatbloom.common.model.PlayerSettingsRecord;
 import me.icewolf23.chatbloom.common.storage.repository.PlayerStateRepository;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,8 +31,23 @@ public final class SettingsMenuListener implements Listener {
             return;
         }
 
+        Inventory topInventory = event.getView().getTopInventory();
+        if (event.getClickedInventory() == null || !event.getClickedInventory().equals(topInventory)) {
+            return;
+        }
+
+        int rawSlot = event.getRawSlot();
+        if (rawSlot < 0 || rawSlot >= topInventory.getSize()) {
+            return;
+        }
+
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType().isAir()) {
+            return;
+        }
+
         PlayerSettingsRecord current = playerStateRepository.load(player.getUniqueId());
-        PlayerSettingsRecord updated = switch (event.getRawSlot()) {
+        PlayerSettingsRecord updated = switch (rawSlot) {
             case SettingsMenuFactory.SLOT_PING_SOUND -> new PlayerSettingsRecord(
                 current.playerId(),
                 !current.pingSoundEnabled(),

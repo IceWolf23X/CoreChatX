@@ -1,0 +1,73 @@
+RUN 2 QUESTION 003
+
+Decisione pratica:
+Run 2 è chiudibile adesso.
+
+Non vedo nessun altro intervento architetturale obbligatorio prima del Run 3.
+Il core di Run 2 ha raggiunto un livello sufficiente:
+- proxy core reale
+- hardening Paper-side
+- PM request/result target-side
+- tracker remoto minimo
+- config/log polish
+- default canali coerenti con proxy mode
+
+Se vuoi proprio fare UN ultimo micro-intervento prima di congelare il run, l’unico che ha senso è questo:
+- hardening/logging del routing Velocity quando l’inoltro plugin message verso un backend fallisce oppure il source server del PM result non esiste più
+
+Perché proprio questo:
+- lato Paper i failure principali ora sono gestiti
+- lato Velocity invece `sendPluginMessage(...)` ai backend non sembra ancora essere controllato/loggato in modo esplicito
+- `sendPrivateMessageResult(...)` usa `proxyServer.getServer(...).ifPresent(...)`, quindi se il source server non esiste/non è disponibile il failure può restare troppo silenzioso
+
+Ma:
+- questo è un micro-hardening opzionale
+- NON è abbastanza grosso da bloccare il passaggio a Run 3
+- se non vuoi sporcare il freeze di Run 2, puoi anche fermarti qui
+
+Risposte dirette:
+1. Sì, Run 2 è chiudibile adesso.
+2. Nessun edge case ancora abbastanza serio da rendere obbligatorio un altro pass, dopo l’hardening già fatto.
+3. Discord/Telegram vanno lasciati esplicitamente fuori dal Run 2 a questo punto. È la scelta corretta. Non manca una foundation minima indispensabile per loro.
+4. I default attuali dei canali sono una buona chiusura:
+   - global = NETWORK
+   - staff = NETWORK
+   - local = RADIUS
+   Sono coerenti con il modello proxy e restano accettabili anche in standalone.
+5. ChatService / PrivateMessageService / PaperNetworkBridge sono accettabili come stato finale di Run 2. Non fare altri carve-out adesso.
+
+Cosa NON toccare prima del Run 3:
+- niente nuova architettura transport
+- niente refactor grosso dei service layer
+- niente ChatItems cross-server
+- niente active-channel sync verso proxy
+- niente rendering authority spostata su Velocity
+- niente bridge Discord/Telegram “tanto per chiudere tutto”
+- niente package cleanup cosmetico di fine run
+
+Rischi residui accettabili:
+- differenze di rendering tra backend se le config non sono coerenti
+- invio plugin message che può ancora dipendere dallo stato reale delle connessioni backend/proxy
+- result PM perso se il source backend sparisce nel frattempo
+- piccoli limiti del modello plugin messaging stesso
+Questi sono residui accettabili per chiudere Run 2 e passare a Run 3.
+
+Unico micro-fix opzionale se proprio vuoi farlo:
+- in ChatBloomVelocityPlugin:
+  - controllare il boolean di `registeredServer.sendPluginMessage(...)`
+  - loggare warning se fanout chat o PM deliver/result non parte
+  - loggare warning se `packet.sourceServerId()` non corrisponde a nessun backend registrato
+Questo rende il routing meno opaco senza aprire scope nuovo.
+
+Ordine consigliato finale:
+1. se vuoi, micro-hardening/logging lato Velocity
+2. freeze Run 2
+3. apri Run 3
+4. in Run 3 fai review/coerenza/polish, non nuove feature infilate all’ultimo
+
+Errori da evitare nel passaggio Run 2 -> Run 3:
+- riaprire Run 2 per mini-refactor estetici
+- infilare Discord/Telegram adesso
+- toccare ancora il service layer senza bisogno
+- cambiare di nuovo ownership tra Paper e Velocity
+- inseguire edge case rari con nuova complessità strutturale
