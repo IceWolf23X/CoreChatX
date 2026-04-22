@@ -1,0 +1,14 @@
+package me.icewolf23.chatbloom.common.network;
+
+public enum NetworkPacketType {
+    CHAT_MESSAGE,
+    PRIVATE_MESSAGE,
+    CHANNEL_SWITCH,
+    CHATITEM_SNAPSHOT_CREATE,
+    CHATITEM_SNAPSHOT_REQUEST,
+    CHATITEM_SNAPSHOT_RESPONSE,
+    PLAYER_STATE_SYNC,
+    MUTE_STATE_SYNC,
+    IGNORE_STATE_SYNC,
+    BRIDGE_FORWARD
+}
