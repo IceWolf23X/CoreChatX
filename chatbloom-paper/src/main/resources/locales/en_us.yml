@@ -1,0 +1,11 @@
+# Locale overrides for configMessage(...) paths.
+# Any key missing here falls back automatically to messages.yml.
+
+locale:
+  current: "{prefix} <gray>Your active locale is <white>{locale}</white>.</gray>"
+  changed: "{prefix} <gray>Your locale is now <white>{locale}</white>.</gray>"
+  invalid: "{prefix} <red>Locale <white>{locale}</white> is not available on this server.</red>"
+
+errors:
+  players-only: "{prefix} <red>Only players can use this command.</red>"
+  no-permission: "{prefix} <red>You do not have permission to do that.</red>"

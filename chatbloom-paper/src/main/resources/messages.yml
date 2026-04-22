@@ -18,6 +18,11 @@ reload:
   success: "{prefix} <green>Reload complete.</green>"
   summary: "{prefix} <gray>Modules reloaded: chat, pings, PMs, filter, chat items, player data hooks.</gray>"
 
+locale:
+  current: "{prefix} <gray>Your active locale is <white>{locale}</white>.</gray>"
+  changed: "{prefix} <gray>Your locale is now <white>{locale}</white>.</gray>"
+  invalid: "{prefix} <red>Locale <white>{locale}</white> is not available on this server.</red>"
+
 channels:
   list: "{prefix} <gray>Available channels: <white>{channels}</white></gray>"
   switched: "{prefix} <gray>Your active channel is now <white>{channel_name}</white>.</gray>"

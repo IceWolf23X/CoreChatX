@@ -16,4 +16,28 @@ public interface ChannelService {
     void setActiveChannel(UUID playerId, String channelId);
 
     String getActiveChannel(UUID playerId);
+
+    default Optional<ChatChannelDefinition> find(String channelId) {
+        return findChannel(channelId).map(ChatChannel::toDefinition);
+    }
+
+    default ChatChannelDefinition getRequired(String channelId) {
+        return find(channelId).orElseThrow(() -> new IllegalArgumentException("Unknown channel: " + channelId));
+    }
+
+    default String getDefaultChannelId() {
+        return getDefaultChannel().id();
+    }
+
+    default String getActiveChannelId(UUID playerId) {
+        return getActiveChannel(playerId);
+    }
+
+    default void setActiveChannelId(UUID playerId, String channelId) {
+        setActiveChannel(playerId, channelId);
+    }
+
+    default Collection<ChatChannelDefinition> listAvailableChannels(UUID playerId) {
+        return channels().stream().map(ChatChannel::toDefinition).toList();
+    }
 }

@@ -10,16 +10,32 @@ channels:
     scope: "NETWORK"
     permission-send: ""
     permission-receive: ""
+    # If false, player names and custom ping tokens stay plain text in this channel.
+    allow-mentions: true
+    # If false, [item]/[inv]/[ec] tokens stay plain text in this channel.
+    allow-chatitems: true
+    # If true, locally-sent messages in this channel may be exported to Discord / Telegram bridges.
+    export-to-bridges: true
+    # Optional per-channel format. Leave blank to use chat.yml -> public-chat.format.
+    format: ""
   local:
     enabled: true
     default: false
-    scope: "RADIUS"
+    scope: "LOCAL_RADIUS"
     radius: 100
     permission-send: "chatbloom.channel.local"
     permission-receive: ""
+    allow-mentions: true
+    allow-chatitems: true
+    export-to-bridges: false
+    format: ""
   staff:
     enabled: true
     default: false
     scope: "NETWORK"
     permission-send: "chatbloom.channel.staff"
     permission-receive: "chatbloom.staff"
+    allow-mentions: true
+    allow-chatitems: false
+    export-to-bridges: false
+    format: ""

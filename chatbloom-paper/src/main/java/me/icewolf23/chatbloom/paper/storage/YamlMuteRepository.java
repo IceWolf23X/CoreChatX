@@ -6,7 +6,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,7 +20,7 @@ public final class YamlMuteRepository implements MuteRepository {
     }
 
     @Override
-    public Optional<MuteRecord> findActiveMute(UUID playerId, Instant now) {
+    public Optional<MuteRecord> findActiveMute(UUID playerId, long now) {
         String path = "players." + playerId;
         if (!yaml.contains(path)) {
             return Optional.empty();
@@ -29,9 +28,11 @@ public final class YamlMuteRepository implements MuteRepository {
         Long until = yaml.contains(path + ".until") ? yaml.getLong(path + ".until") : null;
         MuteRecord record = new MuteRecord(
             playerId,
-            until == null || until <= 0L ? null : Instant.ofEpochMilli(until),
+            yaml.getLong(path + ".created-at", 0L),
+            until == null || until <= 0L ? null : until,
             yaml.getString(path + ".reason", "No reason provided"),
-            parseUuid(yaml.getString(path + ".actor"))
+            parseUuid(yaml.getString(path + ".actor")),
+            yaml.getBoolean(path + ".blocks-private-messages", true)
         );
         return record.isActive(now) ? Optional.of(record) : Optional.empty();
     }
@@ -39,9 +40,11 @@ public final class YamlMuteRepository implements MuteRepository {
     @Override
     public void saveMute(MuteRecord muteRecord) {
         String path = "players." + muteRecord.playerId();
-        yaml.set(path + ".until", muteRecord.expiresAt() == null ? null : muteRecord.expiresAt().toEpochMilli());
+        yaml.set(path + ".created-at", muteRecord.createdAtMillis());
+        yaml.set(path + ".until", muteRecord.expiresAtMillis());
         yaml.set(path + ".reason", muteRecord.reason());
         yaml.set(path + ".actor", muteRecord.actorId() == null ? null : muteRecord.actorId().toString());
+        yaml.set(path + ".blocks-private-messages", muteRecord.blocksPrivateMessages());
         saveNow();
     }
 
@@ -53,12 +56,12 @@ public final class YamlMuteRepository implements MuteRepository {
 
     private UUID parseUuid(String value) {
         if (value == null || value.isBlank()) {
-            return new UUID(0L, 0L);
+            return null;
         }
         try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException exception) {
-            return new UUID(0L, 0L);
+            return null;
         }
     }
 

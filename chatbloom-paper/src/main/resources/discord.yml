@@ -1,7 +1,13 @@
-# Discord bridge foundation for later runs.
+# Discord outbound bridge.
+# Only locally-sent messages from channels with export-to-bridges: true are forwarded.
+# In network mode, ChatBloom exports only once on the source backend to avoid duplicates.
 
 discord:
   enabled: false
   bot-token: ""
-  guild-id: ""
   default-channel-id: ""
+  format: "[{source_server}] [{channel_id}] {sender_name}: {plain_text}"
+  # Optional per-channel overrides:
+  # channel-overrides:
+  #   global: "123456789012345678"
+  channel-overrides: {}

@@ -12,7 +12,7 @@ commands:
   chatbloom:
     description: Main ChatBloom command.
     aliases: [ cbloom ]
-    usage: /chatbloom <reload|settings|item>
+    usage: /chatbloom <reload|settings|locale|item>
   msg:
     description: Send a private message.
     aliases: [ tell, whisper, w ]
@@ -73,6 +73,9 @@ permissions:
     default: op
   chatbloom.command.settings:
     description: Open the ChatBloom settings menu.
+    default: op
+  chatbloom.command.locale:
+    description: Change your active ChatBloom locale.
     default: op
   chatbloom.command.msg:
     description: Send private messages.

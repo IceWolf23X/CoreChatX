@@ -1,8 +1,10 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
 
-import icewolf23x.chatBloom.ChatBloom;
-import icewolf23x.chatBloom.hook.HookService;
+import me.icewolf23.chatbloom.paper.ChatBloom;
+import me.icewolf23.chatbloom.paper.hook.HookService;
 import me.icewolf23.chatbloom.common.config.DeploymentMode;
+
+import java.util.logging.Level;
 
 public final class ChatBloomPaperPlugin extends ChatBloom {
 
@@ -16,7 +18,7 @@ public final class ChatBloomPaperPlugin extends ChatBloom {
 
             getLogger().info("ChatBloom deployment mode: " + bootDeploymentConfig.mode());
 
-            this.repositoryRegistry = new RepositoryRegistry(this, configRegistry);
+            this.repositoryRegistry = new RepositoryRegistry(this);
             this.repositoryRegistry.initialize();
             this.serviceRegistry = new ServiceRegistry(this, configRegistry, repositoryRegistry);
             this.serviceRegistry.initialize();
@@ -31,10 +33,12 @@ public final class ChatBloomPaperPlugin extends ChatBloom {
 
             if (bootDeploymentConfig.mode() == DeploymentMode.PROXY) {
                 getLogger().warning("Proxy mode is configured. A full restart is required after deployment mode changes, and remote chat/PM routing depends on a matching ChatBloom Velocity proxy install.");
+                if (!bootDeploymentConfig.networkFeaturesAllowed()) {
+                    getLogger().warning("deployment.network-features-allowed is false. Proxy transport will initialize, but cross-server chat features are configured as disabled.");
+                }
             }
         } catch (Exception exception) {
-            getLogger().severe("ChatBloom could not start cleanly: " + exception.getMessage());
-            exception.printStackTrace();
+            getLogger().log(Level.SEVERE, "ChatBloom could not start cleanly.", exception);
             getServer().getPluginManager().disablePlugin(this);
         }
     }
@@ -81,11 +85,12 @@ public final class ChatBloomPaperPlugin extends ChatBloom {
         saveResourceIfAbsent("storage.yml");
         saveResourceIfAbsent("discord.yml");
         saveResourceIfAbsent("telegram.yml");
+        saveResourceIfAbsent("locales/en_us.yml");
     }
 
     private void saveResourceIfAbsent(String name) {
-        if (!getDataFolder().exists()) {
-            getDataFolder().mkdirs();
+        if (!getDataFolder().exists() && !getDataFolder().mkdirs()) {
+            getLogger().warning("Could not create plugin data folder at " + getDataFolder().getAbsolutePath() + ".");
         }
         java.io.File file = new java.io.File(getDataFolder(), name);
         if (!file.exists()) {

@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.pipeline;
 
-import icewolf23x.chatBloom.service.ChatService;
+import me.icewolf23.chatbloom.paper.service.ChatService;
 import me.icewolf23.chatbloom.common.pipeline.ChatPipeline;
 import me.icewolf23.chatbloom.common.pipeline.ChatPipelineContext;
 import org.bukkit.entity.Player;

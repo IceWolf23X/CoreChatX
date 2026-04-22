@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.command;
 
-import icewolf23x.chatBloom.ChatBloom;
+import me.icewolf23.chatbloom.paper.ChatBloom;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -32,7 +32,7 @@ public final class ChatSettingsCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("errors.invalid-usage", player, Placeholder.unparsed("usage", "/chatsettings")));
             return true;
         }
-        player.openInventory(plugin.services().settingsMenuFactory().create(player, plugin.repositories().playerStateRepository().load(player.getUniqueId())));
+        player.openInventory(plugin.services().settingsMenuFactory().create(plugin.repositories().playerStateRepository().load(player.getUniqueId())));
         return true;
     }
 

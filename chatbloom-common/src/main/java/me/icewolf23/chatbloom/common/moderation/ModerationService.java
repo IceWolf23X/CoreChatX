@@ -1,6 +1,5 @@
 package me.icewolf23.chatbloom.common.moderation;
 
-import java.time.Instant;
 import java.util.UUID;
 import me.icewolf23.chatbloom.common.pipeline.ChatPipelineContext;
 
@@ -15,7 +14,7 @@ public interface ModerationService {
 
     boolean isMuted(UUID playerId);
 
-    void mute(UUID playerId, Instant until, String reason, UUID actorId);
+    void mute(UUID playerId, Long expiresAtMillis, String reason, UUID actorId, boolean blocksPrivateMessages);
 
     void unmute(UUID playerId);
 }

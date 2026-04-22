@@ -9,7 +9,6 @@ import me.icewolf23.chatbloom.common.storage.repository.GlobalStateRepository;
 import me.icewolf23.chatbloom.common.storage.repository.MuteRepository;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 
 public final class DefaultModerationService implements ModerationService {
@@ -41,7 +40,9 @@ public final class DefaultModerationService implements ModerationService {
         if (!muteEnabled) {
             return ModerationDecision.allow();
         }
-        return isMuted(context.senderId()) ? ModerationDecision.cancel("moderation.muted-public") : ModerationDecision.allow();
+        return activeMute(context.senderId()).isPresent()
+            ? ModerationDecision.cancel("moderation.muted-public")
+            : ModerationDecision.allow();
     }
 
     @Override
@@ -49,7 +50,10 @@ public final class DefaultModerationService implements ModerationService {
         if (!muteEnabled) {
             return ModerationDecision.allow();
         }
-        return isMuted(context.senderId()) ? ModerationDecision.cancel("moderation.muted-private") : ModerationDecision.allow();
+        return activeMute(context.senderId())
+            .filter(MuteRecord::blocksPrivateMessages)
+            .map(ignored -> ModerationDecision.cancel("moderation.muted-private"))
+            .orElseGet(ModerationDecision::allow);
     }
 
     @Override
@@ -72,15 +76,22 @@ public final class DefaultModerationService implements ModerationService {
         if (!muteEnabled) {
             return false;
         }
-        return muteRepository.findActiveMute(playerId, Instant.now(clock)).isPresent();
+        return activeMute(playerId).isPresent();
     }
 
     @Override
-    public void mute(UUID playerId, Instant until, String reason, UUID actorId) {
+    public void mute(UUID playerId, Long expiresAtMillis, String reason, UUID actorId, boolean blocksPrivateMessages) {
         if (!muteEnabled) {
             return;
         }
-        muteRepository.saveMute(new MuteRecord(playerId, until, reason, actorId));
+        muteRepository.saveMute(new MuteRecord(
+            playerId,
+            clock.millis(),
+            expiresAtMillis,
+            reason,
+            actorId,
+            blocksPrivateMessages
+        ));
     }
 
     @Override
@@ -89,5 +100,9 @@ public final class DefaultModerationService implements ModerationService {
             return;
         }
         muteRepository.clearMute(playerId);
+    }
+
+    private java.util.Optional<MuteRecord> activeMute(UUID playerId) {
+        return muteRepository.findActiveMute(playerId, clock.millis());
     }
 }

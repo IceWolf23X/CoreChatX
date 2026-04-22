@@ -4,7 +4,18 @@ deployment:
   # STANDALONE = Paper-only local mode
   # PROXY = optional proxy-aware mode, requires full restart after changes
   mode: "STANDALONE"
+  # Also accepted as deployment.require-restart-on-mode-change for spec compatibility.
   require-full-restart-on-mode-change: true
+  # Backend id used for proxy routing and bridge source labels.
+  server-id: "paper-1"
+  # Plugin messaging channel shared with the Velocity module.
+  network-channel: "chatbloom:main"
+  # Global switch for Discord / Telegram exports.
+  bridges-allowed: true
+  # When false, Paper still boots in PROXY mode but cross-server chat / PM features stay disabled.
+  network-features-allowed: false
+  # Flat alias accepted in addition to deployment.proxy.pending-pm-timeout-seconds.
+  pending-pm-timeout-seconds: 20
   proxy:
     # Must match the backend server name known by Velocity when mode = PROXY.
     server-id: "paper-1"

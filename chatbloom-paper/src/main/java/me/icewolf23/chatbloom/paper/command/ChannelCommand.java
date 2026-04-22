@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.command;
 
-import icewolf23x.chatBloom.ChatBloom;
+import me.icewolf23.chatbloom.paper.ChatBloom;
 import me.icewolf23.chatbloom.common.channel.ChatChannel;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
@@ -51,7 +51,7 @@ public final class ChannelCommand implements TabExecutor {
         String active = plugin.services().channelService().getActiveChannel(player.getUniqueId());
         List<String> available = plugin.services().channelService().channels().stream()
             .filter(ChatChannel::enabled)
-            .filter(channel -> channel.sendPermission().isBlank() || player.hasPermission(channel.sendPermission()))
+            .filter(channel -> plugin.services().channelAudienceResolver().canSend(player, channel))
             .sorted(Comparator.comparing(ChatChannel::id, String.CASE_INSENSITIVE_ORDER))
             .map(channel -> channel.id().equalsIgnoreCase(active) ? "*" + channel.id() : channel.id())
             .toList();
@@ -68,7 +68,7 @@ public final class ChannelCommand implements TabExecutor {
             player.sendMessage(plugin.formats().configMessage("channels.disabled", player, Placeholder.unparsed("channel_name", channel.id())));
             return;
         }
-        if (!channel.sendPermission().isBlank() && !player.hasPermission(channel.sendPermission())) {
+        if (!plugin.services().channelAudienceResolver().canSend(player, channel)) {
             player.sendMessage(plugin.formats().configMessage("channels.no-send-permission", player, Placeholder.unparsed("channel_name", channel.id())));
             return;
         }
@@ -90,7 +90,7 @@ public final class ChannelCommand implements TabExecutor {
                 if (!channel.enabled()) {
                     continue;
                 }
-                if (!channel.sendPermission().isBlank() && !player.hasPermission(channel.sendPermission())) {
+                if (!plugin.services().channelAudienceResolver().canSend(player, channel)) {
                     continue;
                 }
                 complete(channel.id(), args[1], suggestions);

@@ -1,6 +1,12 @@
-# Telegram bridge foundation for later runs.
+# Telegram outbound bridge.
+# Only locally-sent messages from channels with export-to-bridges: true are forwarded.
 
 telegram:
   enabled: false
   bot-token: ""
   default-chat-id: ""
+  format: "[{source_server}] [{channel_id}] {sender_name}: {plain_text}"
+  # Optional per-channel overrides:
+  # chat-overrides:
+  #   global: "-1001234567890"
+  chat-overrides: {}

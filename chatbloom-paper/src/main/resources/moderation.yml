@@ -2,6 +2,8 @@
 
 mute:
   enabled: true
+  # If true, active mutes also block /msg and /reply.
+  block-private-messages: true
   default-reason: "No reason provided"
 
 mutechat:

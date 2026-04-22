@@ -21,7 +21,7 @@ public final class SettingsMenuListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onClick(InventoryClickEvent event) {
-        if (!settingsMenuFactory.isSettingsInventory(event.getView().getTitle())) {
+        if (!settingsMenuFactory.isSettingsInventory(event.getView().title())) {
             return;
         }
 
@@ -53,28 +53,60 @@ public final class SettingsMenuListener implements Listener {
                 !current.pingSoundEnabled(),
                 current.pingActionbarEnabled(),
                 current.socialSpyEnabled(),
-                current.pmEnabled()
+                current.pmEnabled(),
+                current.mentionNotificationsEnabled(),
+                current.staffChatEnabled(),
+                current.localeTag()
             );
             case SettingsMenuFactory.SLOT_PING_ACTIONBAR -> new PlayerSettingsRecord(
                 current.playerId(),
                 current.pingSoundEnabled(),
                 !current.pingActionbarEnabled(),
                 current.socialSpyEnabled(),
-                current.pmEnabled()
+                current.pmEnabled(),
+                current.mentionNotificationsEnabled(),
+                current.staffChatEnabled(),
+                current.localeTag()
             );
             case SettingsMenuFactory.SLOT_PRIVATE_MESSAGES -> new PlayerSettingsRecord(
                 current.playerId(),
                 current.pingSoundEnabled(),
                 current.pingActionbarEnabled(),
                 current.socialSpyEnabled(),
-                !current.pmEnabled()
+                !current.pmEnabled(),
+                current.mentionNotificationsEnabled(),
+                current.staffChatEnabled(),
+                current.localeTag()
+            );
+            case SettingsMenuFactory.SLOT_MENTION_NOTIFICATIONS -> new PlayerSettingsRecord(
+                current.playerId(),
+                current.pingSoundEnabled(),
+                current.pingActionbarEnabled(),
+                current.socialSpyEnabled(),
+                current.pmEnabled(),
+                !current.mentionNotificationsEnabled(),
+                current.staffChatEnabled(),
+                current.localeTag()
+            );
+            case SettingsMenuFactory.SLOT_STAFF_CHAT -> new PlayerSettingsRecord(
+                current.playerId(),
+                current.pingSoundEnabled(),
+                current.pingActionbarEnabled(),
+                current.socialSpyEnabled(),
+                current.pmEnabled(),
+                current.mentionNotificationsEnabled(),
+                !current.staffChatEnabled(),
+                current.localeTag()
             );
             case SettingsMenuFactory.SLOT_SOCIAL_SPY -> new PlayerSettingsRecord(
                 current.playerId(),
                 current.pingSoundEnabled(),
                 current.pingActionbarEnabled(),
                 !current.socialSpyEnabled(),
-                current.pmEnabled()
+                current.pmEnabled(),
+                current.mentionNotificationsEnabled(),
+                current.staffChatEnabled(),
+                current.localeTag()
             );
             default -> null;
         };
@@ -84,6 +116,6 @@ public final class SettingsMenuListener implements Listener {
         }
 
         playerStateRepository.save(updated);
-        player.openInventory(settingsMenuFactory.create(player, updated));
+        player.openInventory(settingsMenuFactory.create(updated));
     }
 }

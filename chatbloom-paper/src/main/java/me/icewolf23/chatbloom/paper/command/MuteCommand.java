@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.command;
 
-import icewolf23x.chatBloom.ChatBloom;
+import me.icewolf23.chatbloom.paper.ChatBloom;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,15 +46,15 @@ public final class MuteCommand implements TabExecutor {
             sender.sendMessage(plugin.formats().configMessage("errors.player-not-found", sender instanceof Player player ? player : null));
             return true;
         }
-        Instant expiresAt = null;
+        Long expiresAtMillis = null;
         int reasonStart = 1;
         if (args.length >= 2) {
             if (args[1].equalsIgnoreCase("permanent")) {
                 reasonStart = 2;
             } else {
-                Instant parsed = parseDuration(args[1]);
+                Long parsed = parseDuration(args[1]);
                 if (parsed != null) {
-                    expiresAt = parsed;
+                    expiresAtMillis = parsed;
                     reasonStart = 2;
                 }
             }
@@ -64,7 +63,13 @@ public final class MuteCommand implements TabExecutor {
             ? String.join(" ", Arrays.copyOfRange(args, reasonStart, args.length))
             : plugin.configs().moderation().getString("mute.default-reason", "No reason provided");
         UUID actorId = sender instanceof Player player ? player.getUniqueId() : new UUID(0L, 0L);
-        plugin.services().moderationService().mute(target.getUniqueId(), expiresAt, reason, actorId);
+        plugin.services().moderationService().mute(
+            target.getUniqueId(),
+            expiresAtMillis,
+            reason,
+            actorId,
+            plugin.configs().moderation().getBoolean("mute.block-private-messages", true)
+        );
         String name = target.getName() == null ? args[0] : target.getName();
         sender.sendMessage(plugin.formats().configMessage("moderation.mute-success", sender instanceof Player player ? player : null, Placeholder.unparsed("target_name", name), Placeholder.unparsed("reason", reason)));
         return true;
@@ -79,7 +84,7 @@ public final class MuteCommand implements TabExecutor {
         return offline.hasPlayedBefore() || offline.isOnline() ? offline : null;
     }
 
-    private Instant parseDuration(String token) {
+    private Long parseDuration(String token) {
         Matcher matcher = DURATION.matcher(token);
         if (!matcher.matches()) {
             return null;
@@ -92,7 +97,7 @@ public final class MuteCommand implements TabExecutor {
             case "d" -> amount * 86_400_000L;
             default -> 0L;
         };
-        return millis <= 0L ? null : Instant.ofEpochMilli(System.currentTimeMillis() + millis);
+        return millis <= 0L ? null : System.currentTimeMillis() + millis;
     }
 
     @Override

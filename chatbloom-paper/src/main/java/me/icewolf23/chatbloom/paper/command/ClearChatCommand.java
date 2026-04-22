@@ -1,6 +1,6 @@
 package me.icewolf23.chatbloom.paper.command;
 
-import icewolf23x.chatBloom.ChatBloom;
+import me.icewolf23.chatbloom.paper.ChatBloom;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;

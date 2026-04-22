@@ -42,7 +42,7 @@ public final class DefaultChannelService implements ChannelService {
         return channels.values().stream()
             .filter(ChatChannel::defaultChannel)
             .findFirst()
-            .orElseGet(() -> new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", ""));
+            .orElseGet(() -> new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", "", true, true, true, ""));
     }
 
     @Override
@@ -74,7 +74,7 @@ public final class DefaultChannelService implements ChannelService {
         channels.clear();
         ConfigurationSection section = configuration.getConfigurationSection("channels");
         if (section == null) {
-            channels.put("global", new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", ""));
+            channels.put("global", new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", "", true, true, true, ""));
             return;
         }
         for (String key : section.getKeys(false)) {
@@ -86,15 +86,38 @@ public final class DefaultChannelService implements ChannelService {
             try {
                 scope = ChannelScope.valueOf(scopeRaw.toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException exception) {
-                scope = ChannelScope.SERVER;
+                scope = switch (scopeRaw.toUpperCase(Locale.ROOT)) {
+                    case "LOCAL_RADIUS" -> ChannelScope.LOCAL_RADIUS;
+                    case "GLOBAL" -> ChannelScope.GLOBAL;
+                    case "STAFF" -> ChannelScope.STAFF;
+                    case "WORLD" -> ChannelScope.WORLD;
+                    case "CUSTOM" -> ChannelScope.CUSTOM;
+                    default -> ChannelScope.SERVER;
+                };
             }
             Integer radius = configuration.contains(base + "radius") ? configuration.getInt(base + "radius") : null;
             String sendPermission = configuration.getString(base + "permission-send", "");
             String receivePermission = configuration.getString(base + "permission-receive", "");
-            channels.put(key.toLowerCase(Locale.ROOT), new ChatChannel(key, enabled, defaultChannel, scope, radius, sendPermission, receivePermission));
+            boolean allowMentions = configuration.getBoolean(base + "allow-mentions", true);
+            boolean allowChatItems = configuration.getBoolean(base + "allow-chatitems", true);
+            boolean exportToBridges = configuration.getBoolean(base + "export-to-bridges", "global".equalsIgnoreCase(key));
+            String format = configuration.getString(base + "format", "");
+            channels.put(key.toLowerCase(Locale.ROOT), new ChatChannel(
+                key,
+                enabled,
+                defaultChannel,
+                scope,
+                radius,
+                sendPermission,
+                receivePermission,
+                allowMentions,
+                allowChatItems,
+                exportToBridges,
+                format
+            ));
         }
         if (channels.values().stream().noneMatch(ChatChannel::defaultChannel)) {
-            channels.put("global", new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", ""));
+            channels.put("global", new ChatChannel("global", true, true, ChannelScope.NETWORK, null, "", "", true, true, true, ""));
         }
     }
 }

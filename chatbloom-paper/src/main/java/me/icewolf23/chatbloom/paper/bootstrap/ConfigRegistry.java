@@ -1,7 +1,8 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
-import icewolf23x.chatBloom.config.ConfigurationService;
+import me.icewolf23.chatbloom.paper.config.ConfigurationService;
 import me.icewolf23.chatbloom.common.config.DeploymentConfig;
 import me.icewolf23.chatbloom.common.config.DeploymentMode;
+import me.icewolf23.chatbloom.common.config.DeploymentSettings;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -87,7 +88,39 @@ public final class ConfigRegistry {
             plugin.getLogger().warning("Invalid deployment.mode '" + rawMode + "'. Falling back to STANDALONE.");
             mode = DeploymentMode.STANDALONE;
         }
-        boolean requireRestart = main.getBoolean("deployment.require-full-restart-on-mode-change", true);
-        return new DeploymentConfig(mode, requireRestart);
+        boolean requireRestart = main.getBoolean(
+            "deployment.require-full-restart-on-mode-change",
+            main.getBoolean("deployment.require-restart-on-mode-change", true)
+        );
+        String serverId = firstNonBlank(
+            main.getString("deployment.server-id"),
+            main.getString("deployment.proxy.server-id"),
+            "paper-1"
+        );
+        String networkChannel = firstNonBlank(main.getString("deployment.network-channel"), "chatbloom:main");
+        boolean bridgesAllowed = main.getBoolean("deployment.bridges-allowed", true);
+        boolean networkFeaturesAllowed = main.getBoolean("deployment.network-features-allowed", mode == DeploymentMode.PROXY);
+        long pendingPmTimeoutSeconds = Math.max(5L, main.getLong(
+            "deployment.proxy.pending-pm-timeout-seconds",
+            main.getLong("deployment.pending-pm-timeout-seconds", 20L)
+        ));
+        return new DeploymentConfig(new DeploymentSettings(
+            mode,
+            requireRestart,
+            serverId,
+            networkChannel,
+            bridgesAllowed,
+            networkFeaturesAllowed,
+            pendingPmTimeoutSeconds
+        ));
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return "";
     }
 }
