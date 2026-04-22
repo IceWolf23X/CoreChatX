@@ -1,0 +1,63 @@
+# Main message file.
+# Supported placeholders vary by message, but common ones include:
+# {prefix}, {player_name}, {target_name}, {sender_name}, {message}, {seconds}, {count}, {setting}, {state}
+
+prefix: "<dark_gray>[</dark_gray><gradient:#79d6b8:#5aa9ff>ChatBloom</gradient><dark_gray>]</dark_gray>"
+
+errors:
+  no-permission: "{prefix} <red>You do not have permission to do that.</red>"
+  players-only: "{prefix} <red>Only players can use this command.</red>"
+  player-not-found: "{prefix} <red>That player is not online.</red>"
+  cannot-message-self: "{prefix} <red>You cannot message yourself.</red>"
+  empty-message: "{prefix} <red>Your message is empty after sanitization.</red>"
+  no-reply-target: "{prefix} <red>You do not have anyone to reply to.</red>"
+  invalid-chatitem-id: "{prefix} <red>This chat item preview is no longer available.</red>"
+  invalid-usage: "{prefix} <red>Usage: {usage}</red>"
+
+reload:
+  success: "{prefix} <green>Reload complete.</green>"
+  summary: "{prefix} <gray>Modules reloaded: chat, pings, PMs, filter, chat items, player data hooks.</gray>"
+
+cooldown:
+  public: "{prefix} <yellow>You must wait <white>{seconds}</white> more second(s) before chatting again.</yellow>"
+  pm: "{prefix} <yellow>You must wait <white>{seconds}</white> more second(s) before sending another private message.</yellow>"
+
+ping:
+  toggles:
+    # Used by /ping <sound|actionbar> status with placeholders {setting} and {state}.
+    status: "{prefix} <gray>Ping <white>{setting}</white> notifications are currently <white>{state}</white>.</gray>"
+    sound-changed: "{prefix} <gray>Ping sound notifications are now <white>{state}</white>.</gray>"
+    actionbar-changed: "{prefix} <gray>Ping actionbar notifications are now <white>{state}</white>.</gray>"
+  state-on: "<green>enabled</green>"
+  state-off: "<red>disabled</red>"
+  # Used when a player is pinged by a mention or a custom ping.
+  notification-actionbar: "<gold>Ping:</gold> <yellow>{sender_name}</yellow> mentioned you."
+  notification-sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  notification-volume: 0.85
+  notification-pitch: 1.25
+
+private-messages:
+  to-sender: "<dark_gray>[</dark_gray><light_purple>PM</light_purple><dark_gray>]</dark_gray> <gray>you -> </gray><white>{target_name}</white><dark_gray>: </dark_gray>{message}"
+  to-target: "<dark_gray>[</dark_gray><light_purple>PM</light_purple><dark_gray>]</dark_gray> <white>{sender_name}</white><gray> -> you</gray><dark_gray>: </dark_gray>{message}"
+  spy: "<dark_gray>[</dark_gray><red>SPY</red><dark_gray>]</dark_gray> <white>{sender_name}</white><gray> -> </gray><white>{target_name}</white><dark_gray>: </dark_gray>{message}"
+  received-sound: "BLOCK_NOTE_BLOCK_BELL"
+  received-volume: 0.85
+  received-pitch: 1.1
+  socialspy-on: "{prefix} <gray>Social spy is now <green>enabled</green>.</gray>"
+  socialspy-off: "{prefix} <gray>Social spy is now <red>disabled</red>.</gray>"
+
+broadcast:
+  format: "<dark_gray>[</dark_gray><gold>Broadcast</gold><dark_gray>]</dark_gray> <white>{sender_name}</white><dark_gray>: </dark_gray><gold>{message}</gold>"
+
+chat:
+  no-message-sent: "{prefix} <yellow>Nothing was sent because the message is empty after sanitization.</yellow>"
+
+join-quit:
+  join: "<dark_gray>[</dark_gray><green>+</green><dark_gray>]</dark_gray> <white>{player_name}</white>"
+  quit: "<dark_gray>[</dark_gray><red>-</red><dark_gray>]</dark_gray> <white>{player_name}</white>"
+  first-join: "<dark_gray>[</dark_gray><gradient:#79d6b8:#5aa9ff>Welcome</gradient><dark_gray>]</dark_gray> <white>{player_name}</white><gray> is joining for the first time as player </gray><white>#{count}</white><gray>.</gray>"
+
+chatitems:
+  # Hover shown on clickable chat preview tokens.
+  click-to-open: "<gray>Click to open the saved preview.</gray>"
+  expired: "{prefix} <red>This preview has expired or was cleared during reload/restart.</red>"

@@ -1,0 +1,32 @@
+# Core plugin settings.
+
+debug: false
+
+hooks:
+  # If true, PlaceholderAPI placeholders inside ChatBloom config formats are parsed when the plugin is present.
+  placeholderapi: true
+  # If true, LuckPerms group prefixes are read when the plugin is present.
+  luckperms: true
+
+logging:
+  public-chat: true
+  private-messages: true
+  broadcasts: true
+  reload: true
+  errors: true
+
+player-data:
+  # Toggle commands still save immediately; this mainly controls the fallback save on plugin disable.
+  auto-save-on-disable: true
+
+first-join:
+  enabled: true
+  counter-enabled: true
+
+join-quit:
+  join-enabled: true
+  quit-enabled: true
+
+reload:
+  # A short summary is shown to the command sender after a successful reload.
+  show-summary: true

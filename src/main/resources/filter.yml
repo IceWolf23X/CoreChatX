@@ -1,0 +1,14 @@
+# Word filter configuration.
+
+enabled: true
+
+# The filter censors and still sends the message.
+blocked-words:
+  - idiota
+  - stupido
+
+replacement-character: "*"
+
+hover-original:
+  enabled: false
+  text: "<gray>Original term:</gray> <red>{word}</red>"Ric
