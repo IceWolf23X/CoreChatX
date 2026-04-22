@@ -8,6 +8,8 @@ deployment:
   proxy:
     # Must match the backend server name known by Velocity when mode = PROXY.
     server-id: "paper-1"
+    # Remote PM requests expire locally after this many seconds if no proxy result returns.
+    pending-pm-timeout-seconds: 20
 
 debug: false
 

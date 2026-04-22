@@ -1,0 +1,72 @@
+RUN:
+Run 2
+
+GOAL:
+Capire se, dopo l’hardening finale del proxy core, il Run 2 può essere considerato chiuso oppure se resta un unico intervento piccolo e obbligatorio prima del passaggio al Run 3.
+
+FOUND:
+- Il proxy core minimale del Run 2 è implementato e compila:
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PluginMessageCodec.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/ProxyMessageType.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/ChatMessagePacket.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PrivateMessagePacket.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PrivateMessageResultPacket.java`
+- Paper bridge reale e hardening completato:
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/network/PaperNetworkBridge.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/BridgeRegistry.java`
+- Velocity routing reale:
+- `chatbloom-velocity/src/main/java/me/icewolf23/chatbloom/velocity/bootstrap/ChatBloomVelocityPlugin.java`
+- PM cross-server request/result target-side attive:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- Tracking pending PM remote estratto in helper minima:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/RemotePmTracker.java`
+- Chat cross-server solo per `ChannelScope.NETWORK`:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/ChatService.java`
+- Config/log polish applicato:
+- `chatbloom-paper/src/main/resources/config.yml`
+- `chatbloom-paper/src/main/resources/channels.yml`
+- `chatbloom-paper/src/main/resources/messages.yml`
+- La root build passa con `mvn -q -DskipTests package`.
+
+CURRENT PLAN:
+- Non aprire ancora Run 3 senza una conferma chiara.
+- Evitare sia feature creep sia mini-refactor cosmetici.
+- Capire se:
+- il Run 2 è già chiuso correttamente
+- oppure c’è un ultimo fix piccolo, mirato e obbligatorio prima di congelarlo
+
+DOUBTS:
+1. Dopo proxy core + hardening + config/log polish, il Run 2 è da considerare chiuso?
+2. C’è un solo edge case ancora abbastanza serio da giustificare un ultimo micro-intervento prima del Run 3?
+3. Discord/Telegram vanno lasciati esplicitamente fuori dal Run 2 a questo punto, come scelta corretta, oppure manca almeno una foundation minima da lasciare già pronta?
+4. I default attuali dei canali (`global/staff` su `NETWORK`, `local` su `RADIUS`) sono una buona chiusura per Run 2 oppure sarebbe meglio non toccare altro e fermarsi qui?
+5. `ChatService`, `PrivateMessageService` e `PaperNetworkBridge` sono accettabili come stato finale del Run 2, oppure c’è ancora un carve-out piccolo e pragmatico davvero consigliato?
+
+FILES / CLASSES INVOLVED:
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/ChatService.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/RemotePmTracker.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/network/PaperNetworkBridge.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/BridgeRegistry.java`
+- `chatbloom-velocity/src/main/java/me/icewolf23/chatbloom/velocity/bootstrap/ChatBloomVelocityPlugin.java`
+- `chatbloom-paper/src/main/resources/config.yml`
+- `chatbloom-paper/src/main/resources/channels.yml`
+- `chatbloom-paper/src/main/resources/messages.yml`
+
+CONSTRAINTS TO PRESERVE:
+- Proteggere la modalità standalone Paper.
+- La modalità proxy resta opzionale e restart-based.
+- Nessuna nuova architettura transport.
+- Nessun refactor grosso di service layer a fine Run 2.
+- Velocity resta autorità di routing, non di rendering.
+- Paper resta autorità di rendering locale, notify/sound/actionbar, GUI e ChatItems locali.
+- Niente ChatItems cross-server in questo run.
+- Niente active-channel sync verso proxy nel Run 2.
+- Niente bridge Discord/Telegram se questo sporca o indebolisce la chiusura del core.
+
+WHAT I NEED BACK:
+- decisione pratica se il Run 2 è chiudibile adesso
+- eventuale unico intervento finale se davvero necessario
+- cosa NON toccare prima del Run 3
+- rischi residui accettabili
+- errori da evitare nel passaggio Run 2 -> Run 3

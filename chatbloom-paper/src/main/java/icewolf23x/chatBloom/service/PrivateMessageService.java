@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,10 +26,12 @@ public final class PrivateMessageService {
 
     private final ChatBloom plugin;
     private final Map<UUID, ReplyTarget> replyTargets = new HashMap<>();
-    private final Map<UUID, PendingRemoteMessage> pendingRemoteMessages = new HashMap<>();
+    private final RemotePmTracker remotePmTracker;
 
     public PrivateMessageService(ChatBloom plugin) {
         this.plugin = plugin;
+        long timeoutSeconds = Math.max(5L, plugin.configuration().main().getLong("deployment.proxy.pending-pm-timeout-seconds", 20L));
+        this.remotePmTracker = new RemotePmTracker(Duration.ofSeconds(timeoutSeconds));
     }
 
     public void reload() {
@@ -70,7 +73,7 @@ public final class PrivateMessageService {
     public void acceptRemotePrivateMessage(PrivateMessagePacket packet) {
         Player target = packet.targetId() == null ? findOnlinePlayer(packet.targetName()) : Bukkit.getPlayer(packet.targetId());
         if (target == null || !target.isOnline()) {
-            plugin.services().networkBridge().publishPrivateMessageResult(new PrivateMessageResultPacket(
+            sendRemoteResult(new PrivateMessageResultPacket(
                 packet.requestId(),
                 packet.sourceServerId(),
                 packet.senderId(),
@@ -85,7 +88,7 @@ public final class PrivateMessageService {
         }
 
         if (!plugin.services().privacyService().isPmEnabled(target.getUniqueId()) && !packet.senderBypass()) {
-            plugin.services().networkBridge().publishPrivateMessageResult(new PrivateMessageResultPacket(
+            sendRemoteResult(new PrivateMessageResultPacket(
                 packet.requestId(),
                 packet.sourceServerId(),
                 packet.senderId(),
@@ -100,7 +103,7 @@ public final class PrivateMessageService {
         }
 
         if (plugin.services().privacyService().isIgnoring(target.getUniqueId(), packet.senderId()) && !packet.senderBypass()) {
-            plugin.services().networkBridge().publishPrivateMessageResult(new PrivateMessageResultPacket(
+            sendRemoteResult(new PrivateMessageResultPacket(
                 packet.requestId(),
                 packet.sourceServerId(),
                 packet.senderId(),
@@ -116,7 +119,7 @@ public final class PrivateMessageService {
 
         MessageRender render = renderPrivateMessage(packet.plainText());
         if (render.plain().trim().isEmpty()) {
-            plugin.services().networkBridge().publishPrivateMessageResult(new PrivateMessageResultPacket(
+            sendRemoteResult(new PrivateMessageResultPacket(
                 packet.requestId(),
                 packet.sourceServerId(),
                 packet.senderId(),
@@ -136,7 +139,7 @@ public final class PrivateMessageService {
         notifySocialSpy(null, packet.senderName(), target.getName(), render.component());
         logConsole(packet.senderName(), target.getName(), render.plain());
 
-        plugin.services().networkBridge().publishPrivateMessageResult(new PrivateMessageResultPacket(
+        sendRemoteResult(new PrivateMessageResultPacket(
             packet.requestId(),
             packet.sourceServerId(),
             packet.senderId(),
@@ -150,11 +153,22 @@ public final class PrivateMessageService {
     }
 
     public void handlePrivateMessageResult(PrivateMessageResultPacket packet) {
-        PendingRemoteMessage pending = pendingRemoteMessages.remove(packet.requestId());
+        remotePmTracker.pruneExpired();
+        remotePmTracker.pruneForOfflineSenders();
+        RemotePmTracker.PendingRemoteMessage pending = remotePmTracker.remove(packet.requestId());
         if (pending == null) {
+            if (plugin.configuration().main().getBoolean("debug", false)) {
+                plugin.getLogger().info("[DEBUG] Ignored stale or unknown remote PM result " + packet.requestId());
+            }
             return;
         }
         Player senderPlayer = pending.sender() instanceof Player onlinePlayer && onlinePlayer.isOnline() ? onlinePlayer : null;
+        if (pending.sender() instanceof Player && senderPlayer == null) {
+            if (plugin.configuration().main().getBoolean("debug", false)) {
+                plugin.getLogger().info("[DEBUG] Dropped remote PM result " + packet.requestId() + " because the sender is no longer online.");
+            }
+            return;
+        }
         if (!packet.delivered()) {
             pending.sender().sendMessage(plugin.formats().configMessage(
                 packet.reasonKey() == null ? "errors.player-not-found" : packet.reasonKey(),
@@ -292,8 +306,7 @@ public final class PrivateMessageService {
         }
 
         UUID requestId = UUID.randomUUID();
-        pendingRemoteMessages.put(requestId, new PendingRemoteMessage(sender, senderName, targetName, sanitized));
-        plugin.services().networkBridge().publishPrivateMessage(new PrivateMessagePacket(
+        boolean sent = plugin.services().networkBridge().publishPrivateMessage(new PrivateMessagePacket(
             requestId,
             plugin.services().bridgeServerId(),
             senderPlayer == null ? CONSOLE_UUID : senderPlayer.getUniqueId(),
@@ -304,6 +317,13 @@ public final class PrivateMessageService {
             isStaffBypass(senderPlayer),
             Instant.now()
         ));
+        if (!sent) {
+            sender.sendMessage(plugin.formats().configMessage("private-messages.remote-unavailable", senderPlayer));
+            return false;
+        }
+        remotePmTracker.pruneExpired();
+        remotePmTracker.pruneForOfflineSenders();
+        remotePmTracker.put(requestId, sender, senderName, targetName, sanitized);
         return true;
     }
 
@@ -363,12 +383,15 @@ public final class PrivateMessageService {
             .orElse(null);
     }
 
+    private void sendRemoteResult(PrivateMessageResultPacket packet) {
+        boolean sent = plugin.services().networkBridge().publishPrivateMessageResult(packet);
+        if (!sent) {
+            plugin.getLogger().warning("ChatBloom proxy transport could not return PM result " + packet.requestId() + " to backend '" + packet.sourceServerId() + "'.");
+        }
+    }
+
     private record ReplyTarget(UUID targetId, String targetName, boolean remote) {
     }
-
-    private record PendingRemoteMessage(CommandSender sender, String senderName, String targetName, String sanitizedMessage) {
-    }
-
     private record MessageRender(Component component, String plain) {
     }
 }

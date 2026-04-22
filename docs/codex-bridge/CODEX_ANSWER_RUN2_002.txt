@@ -1,0 +1,122 @@
+RUN 2 QUESTION 002
+
+Decisione pratica:
+Il passo corretto adesso NON è aprire subito Discord/Telegram.
+Prima va fatto un ultimo pass di hardening del proxy core + audit/log/config polish.
+Poi, se il routing resta pulito, Run 2 può essere chiuso anche senza bridge esterni.
+
+Ordine consigliato:
+1. hardening del routing Paper/Velocity (obbligatorio)
+2. audit/log consistency + config polish (obbligatorio ma piccolo)
+3. chiusura Run 2
+4. Discord/Telegram solo se rimane tempo reale e solo se bounded/safely disabled
+5. in caso contrario, lasciare Discord/Telegram fuori da questo pass
+
+Routing attuale: abbastanza completo per Run 2?
+Quasi sì, ma non lo dichiarerei “chiuso” senza 2 hardening obbligatori:
+- hardening carrier/failure handling nel PaperNetworkBridge
+- hardening pending PM lifecycle / stale result handling
+
+Hardening obbligatorio 1:
+PaperNetworkBridge oggi, se non ha un player carrier online, logga warning e droppa il packet.
+Questo è troppo fragile per considerare stabile il proxy core.
+
+Cosa fare:
+- far restituire ai metodi di invio un esito boolean/result
+- per PM request dal source:
+  - NON registrare la pending remote message se il send non parte davvero
+  - se il send fallisce, mandare feedback immediato al sender
+- per chat network:
+  - se il send fallisce, la chat locale può restare consegnata localmente
+  - ma loggare chiaramente che il fanout proxy è fallito
+- mantenere il fallback preferredCarrier -> first online, ma non lasciare failure silenziosi lato chiamante
+
+Hardening obbligatorio 2:
+PrivateMessageService tiene pendingRemoteMessages senza timeout/expiry.
+Questo lascia rischio di pending stale se:
+- il source backend resta senza carrier per ricevere il result
+- il sender lascia il server
+- il result non arriva mai
+
+Cosa fare:
+- aggiungere timestamp nella pending remote message
+- aggiungere cleanup periodico o cleanup opportunistico
+- scadere le richieste remote dopo una finestra breve (es. 15-30s)
+- ignorare result tardivi già scaduti
+- se il sender non è più online al result time:
+  - rimuovere la pending
+  - non tentare feedback/cooldown/reply updates non sensati
+  - opzionalmente loggare in debug
+
+Config/log polish da fare prima di chiudere Run 2:
+- in PROXY mode loggare chiaramente:
+  - server-id Paper attivo
+  - plugin channel attivo
+  - proxy routing enabled
+- se PROXY mode ma non esiste alcun canale enabled con scope NETWORK:
+  - warning esplicito
+- channels.yml:
+  - aggiungere commenti molto chiari che solo NETWORK fa fanout cross-server
+- valutare di cambiare i default generati per fresh installs:
+  - global -> NETWORK
+  - staff -> NETWORK
+  - local -> RADIUS
+  Questo è sicuro anche in standalone perché il resolver locale tratta NETWORK come audience locale più eventuale fanout solo se bridge attivo.
+  Se non vuoi toccare i default adesso, almeno warning + commenti sono obbligatori.
+
+Discord/Telegram nel Run 2:
+La scelta più corretta ora è NON renderli obbligatori.
+Dopo un proxy core appena stabilizzato:
+- Discord/Telegram possono restare bounded e safely disabled
+- non aprire bridge esterni prima che il core routing abbia failure handling decente
+Se proprio rimane tempo dopo hardening:
+- al massimo Discord outbound-only minimal, off by default, senza inbound complesso
+- Telegram meglio lasciarlo fuori da questo pass
+
+Edge case specifici da correggere subito:
+1. source backend senza player carrier:
+   - fix obbligatorio lato send result/failure
+2. target offline / player moved:
+   - il design attuale è accettabile se target backend restituisce not-found/deny
+   - tenere messaggi di esito chiari
+3. duplicate or stale PM result handling:
+   - duplicate già quasi harmless perché la pending viene rimossa
+   - stale result va coperto con timeout expiry
+4. differenze config tra backend:
+   - accettabile nel modello attuale
+   - documentare che i backend devono avere config coerenti per rendering uniforme
+   - non cercare di risolverlo con proxy-side rendering in questo run
+
+ChatService / PrivateMessageService:
+Accettabili come luogo temporaneo per chiudere Run 2.
+Non fare grandi carve-out adesso.
+Se vuoi fare un solo carve-out piccolo e pragmatico:
+- estrai solo il tracking delle pending remote PM in una helper class minima
+  tipo RemotePmTracker / PendingRemoteMessageStore
+- NON rifattorizzare il resto del service layer adesso
+
+Cosa spostare / cosa non spostare:
+Spostare:
+- eventuale pending remote PM tracking helper
+- eventuale small send-result abstraction nel bridge layer
+Non spostare:
+- core chat logic fuori da ChatService adesso
+- core PM logic fuori da PrivateMessageService adesso
+- rendering authority verso Velocity
+- ChatItems cross-server
+- nuova architettura transport
+
+Rischi principali:
+- packet drop silenziosi quando manca carrier
+- pending remote PM stale
+- falsa sensazione che proxy mode sia “stabile” mentre fallisce su edge cases
+- feature creep verso bridge esterni troppo presto
+- tentazione di rifattorizzare troppo il service layer a fine Run 2
+
+Errori da evitare:
+- passare a Discord/Telegram prima dell’hardening del routing
+- introdurre una nuova architettura network più grande
+- aggiungere ChatItems cross-server ora
+- spostare rendering authority su Velocity
+- fare refactor grosso di ChatService/PrivateMessageService in chiusura run
+- lasciare PROXY mode senza warning quando nessun canale NETWORK è configurato

@@ -145,7 +145,7 @@ public final class ChatService {
         bypassTargets.retainAll(recipients);
         notifyTargets(sender.getUniqueId(), sender.getName(), notificationTargets, bypassTargets);
         if (channel.scope() == ChannelScope.NETWORK && plugin.services().networkBridge().isEnabled()) {
-            plugin.services().networkBridge().publishChat(new ChatMessagePacket(
+            boolean forwarded = plugin.services().networkBridge().publishChat(new ChatMessagePacket(
                 sender.getUniqueId(),
                 sender.getName(),
                 plugin.services().bridgeServerId(),
@@ -154,6 +154,9 @@ public final class ChatService {
                 plugin.formats().rankPrefixTemplate(sender),
                 Instant.now()
             ));
+            if (!forwarded) {
+                plugin.getLogger().warning("ChatBloom proxy fanout failed for channel '" + channel.id() + "' from sender '" + sender.getName() + "'. Local delivery still succeeded.");
+            }
         }
         logConsole(channel.id(), finalMessage);
     }

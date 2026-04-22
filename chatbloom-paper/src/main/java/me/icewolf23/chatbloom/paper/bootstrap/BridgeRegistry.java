@@ -1,4 +1,5 @@
 package me.icewolf23.chatbloom.paper.bootstrap;
+import me.icewolf23.chatbloom.common.channel.ChannelScope;
 import me.icewolf23.chatbloom.common.config.DeploymentMode;
 import me.icewolf23.chatbloom.paper.network.PaperNetworkBridge;
 import org.bukkit.Bukkit;
@@ -28,7 +29,14 @@ public final class BridgeRegistry {
         if (proxyMode) {
             Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, PROXY_CHANNEL);
             Bukkit.getMessenger().registerIncomingPluginChannel(plugin, PROXY_CHANNEL, bridge);
-            plugin.getLogger().info("Proxy mode active on Paper backend '" + serverId + "' using channel '" + PROXY_CHANNEL + "'.");
+            plugin.getLogger().info("Proxy mode active on Paper backend '" + serverId + "'.");
+            plugin.getLogger().info("ChatBloom proxy channel active: '" + PROXY_CHANNEL + "'.");
+            plugin.getLogger().info("ChatBloom proxy routing enabled for NETWORK channels and cross-server PMs.");
+            boolean hasNetworkChannel = serviceRegistry.channelService().channels().stream()
+                .anyMatch(channel -> channel.enabled() && channel.scope() == ChannelScope.NETWORK);
+            if (!hasNetworkChannel) {
+                plugin.getLogger().warning("Proxy mode is enabled, but no channel is configured with scope NETWORK. Cross-server chat fanout will remain inactive until at least one enabled NETWORK channel exists.");
+            }
         } else {
             plugin.getLogger().info("Standalone mode active.");
         }

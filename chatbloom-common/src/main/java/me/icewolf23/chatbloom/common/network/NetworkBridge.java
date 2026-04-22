@@ -3,9 +3,9 @@ package me.icewolf23.chatbloom.common.network;
 public interface NetworkBridge {
     boolean isEnabled();
 
-    void publishChat(ChatMessagePacket packet);
+    boolean publishChat(ChatMessagePacket packet);
 
-    void publishPrivateMessage(PrivateMessagePacket packet);
+    boolean publishPrivateMessage(PrivateMessagePacket packet);
 
-    void publishPrivateMessageResult(PrivateMessageResultPacket packet);
+    boolean publishPrivateMessageResult(PrivateMessageResultPacket packet);
 }

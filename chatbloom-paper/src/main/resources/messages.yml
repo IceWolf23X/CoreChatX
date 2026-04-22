@@ -69,6 +69,7 @@ private-messages:
   spy: "<dark_gray>[</dark_gray><red>SPY</red><dark_gray>]</dark_gray> <white>{sender_name}</white><gray> -> </gray><white>{target_name}</white><dark_gray>: </dark_gray>{message}"
   disabled-target: "{prefix} <red>That player has private messages disabled.</red>"
   blocked-by-target: "{prefix} <red>That player is not accepting messages from you.</red>"
+  remote-unavailable: "{prefix} <red>The proxy transport could not forward that private message right now.</red>"
   received-sound: "BLOCK_NOTE_BLOCK_BELL"
   received-volume: 0.85
   received-pitch: 1.1

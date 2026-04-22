@@ -40,33 +40,33 @@ public final class PaperNetworkBridge implements NetworkBridge, PluginMessageLis
     }
 
     @Override
-    public void publishChat(ChatMessagePacket packet) {
+    public boolean publishChat(ChatMessagePacket packet) {
         if (!enabled) {
-            return;
+            return false;
         }
-        sendPluginMessage(
+        return sendPluginMessage(
             PluginMessageCodec.encodeChat(ProxyMessageType.NETWORK_CHAT_FORWARD, packet),
             packet.senderId() == null ? null : Bukkit.getPlayer(packet.senderId())
         );
     }
 
     @Override
-    public void publishPrivateMessage(PrivateMessagePacket packet) {
+    public boolean publishPrivateMessage(PrivateMessagePacket packet) {
         if (!enabled) {
-            return;
+            return false;
         }
-        sendPluginMessage(
+        return sendPluginMessage(
             PluginMessageCodec.encodePrivateMessage(ProxyMessageType.PM_REQUEST, packet),
             packet.senderId() == null ? null : Bukkit.getPlayer(packet.senderId())
         );
     }
 
     @Override
-    public void publishPrivateMessageResult(PrivateMessageResultPacket packet) {
+    public boolean publishPrivateMessageResult(PrivateMessageResultPacket packet) {
         if (!enabled) {
-            return;
+            return false;
         }
-        sendPluginMessage(PluginMessageCodec.encodePrivateMessageResult(packet), null);
+        return sendPluginMessage(PluginMessageCodec.encodePrivateMessageResult(packet), null);
     }
 
     @Override
@@ -88,12 +88,20 @@ public final class PaperNetworkBridge implements NetworkBridge, PluginMessageLis
         }
     }
 
-    private void sendPluginMessage(byte[] payload, Player preferredCarrier) {
-        Player carrier = preferredCarrier != null && preferredCarrier.isOnline() ? preferredCarrier : Bukkit.getOnlinePlayers().stream().findFirst().orElse(null);
+    private boolean sendPluginMessage(byte[] payload, Player preferredCarrier) {
+        Player carrier = preferredCarrier != null && preferredCarrier.isOnline()
+            ? preferredCarrier
+            : Bukkit.getOnlinePlayers().stream().findFirst().orElse(null);
         if (carrier == null) {
             plugin.getLogger().warning("ChatBloom proxy transport could not send a packet because no online player is available as a plugin-message carrier.");
-            return;
+            return false;
         }
-        carrier.sendPluginMessage(plugin, channel, payload);
+        try {
+            carrier.sendPluginMessage(plugin, channel, payload);
+            return true;
+        } catch (Exception exception) {
+            plugin.getLogger().warning("ChatBloom proxy transport failed to send a packet on channel '" + channel + "': " + exception.getMessage());
+            return false;
+        }
     }
 }

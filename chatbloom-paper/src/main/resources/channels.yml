@@ -1,12 +1,13 @@
-# Channel foundation for Run 1.
-# Standalone mode uses the existing global chat behavior by default.
+# Channel defaults.
+# In STANDALONE mode, NETWORK still behaves as a normal local channel unless the proxy bridge is enabled.
 # In PROXY mode, only channels with scope NETWORK are forwarded cross-server.
+# SERVER and RADIUS always stay backend-local.
 
 channels:
   global:
     enabled: true
     default: true
-    scope: "SERVER"
+    scope: "NETWORK"
     permission-send: ""
     permission-receive: ""
   local:
@@ -19,6 +20,6 @@ channels:
   staff:
     enabled: true
     default: false
-    scope: "SERVER"
+    scope: "NETWORK"
     permission-send: "chatbloom.channel.staff"
     permission-receive: "chatbloom.staff"
