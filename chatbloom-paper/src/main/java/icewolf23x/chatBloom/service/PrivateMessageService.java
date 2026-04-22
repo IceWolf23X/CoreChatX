@@ -52,12 +52,16 @@ public final class PrivateMessageService {
             return false;
         }
 
-        if (!plugin.services().privacyService().isPmEnabled(target.getUniqueId())) {
+        boolean staffBypass = senderPlayer != null
+            && plugin.configs().privacy().getBoolean("private-messages.allow-staff-bypass", true)
+            && senderPlayer.hasPermission(plugin.configs().privacy().getString("private-messages.staff-bypass-permission", "chatbloom.staff"));
+
+        if (!plugin.services().privacyService().isPmEnabled(target.getUniqueId()) && !staffBypass) {
             sender.sendMessage(plugin.formats().configMessage("private-messages.disabled-target", senderPlayer));
             return false;
         }
 
-        if (senderPlayer != null && plugin.services().privacyService().isIgnoring(target.getUniqueId(), senderPlayer.getUniqueId())) {
+        if (senderPlayer != null && plugin.services().privacyService().isIgnoring(target.getUniqueId(), senderPlayer.getUniqueId()) && !staffBypass) {
             sender.sendMessage(plugin.formats().configMessage("private-messages.blocked-by-target", senderPlayer));
             return false;
         }

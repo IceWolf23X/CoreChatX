@@ -1,0 +1,62 @@
+RUN:
+Run 2
+
+GOAL:
+Decide the minimal but real proxy-routing implementation for Run 2 so Paper and Velocity can exchange chat/PM/channel events cleanly without destabilizing standalone mode or forcing a transport design that is too large for the current run.
+
+FOUND:
+- Run 1 foundations are in place and the project compiles as `chatbloom-common`, `chatbloom-paper`, and `chatbloom-velocity`.
+- Paper standalone behavior still builds and now has more of the Run 2 standalone feature set wired:
+- active channel selection and persistence
+- channel-based recipient resolution for standalone mode
+- ignore / unignore / ignorelist / pmtoggle
+- mute / unmute / mutechat / clearchat
+- settings GUI entry and persistence
+- moderation checks and chat mute integration in the local Paper flow
+- `chatbloom-paper` still uses a stub `PaperNetworkBridge` under `me.icewolf23.chatbloom.paper.network.PaperNetworkBridge`.
+- `chatbloom-velocity` still only has `me.icewolf23.chatbloom.velocity.bootstrap.ChatBloomVelocityPlugin` with logging and no routing authority yet.
+- `docs/ChatBloom_Program_Run2.md` says Run 2 should make proxy-enabled mode actually usable at least for core chat/PM flows.
+- The docs do not lock a concrete transport implementation beyond “Paper forwards / Velocity routes”.
+- The current codebase has no actual Paper<->Velocity transport wiring yet, no packet envelope abstraction beyond the simple common DTOs, and no backend/server registry or player-location authority in the Velocity module.
+
+CURRENT PLAN:
+- Keep standalone mode untouched and first-class.
+- Implement the smallest real proxy path that satisfies Run 2:
+- Paper sends outbound chat/PM/channel packets only when deployment mode is `PROXY`
+- Velocity receives them, resolves recipients, and forwards to target backend(s)
+- backends continue handling local rendering, sounds, actionbar, ChatItems UI
+- avoid half-finished network behavior for ChatItems if that becomes too large
+
+DOUBTS:
+1. For Run 2, what is the recommended concrete transport shape between Paper and Velocity here: Bukkit/Paper plugin messaging channel, Velocity plugin messaging, or a different in-process bridge abstraction with transport stub still underneath?
+2. What is the smallest acceptable “real routing” milestone for Run 2: only cross-server PM + global/staff channel fanout, or also active-channel sync and local-vs-network channel distinction?
+3. Should Paper continue to render the final public chat message locally and only send plain payloads to Velocity, or should Velocity become the authority for deciding final remote recipients and then forward plain/renderable payloads back to backend-specific delivery?
+
+FILES / CLASSES INVOLVED:
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/network/PaperNetworkBridge.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/BridgeRegistry.java`
+- `chatbloom-paper/src/main/java/me/icewolf23/chatbloom/paper/bootstrap/ChatBloomPaperPlugin.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/ChatService.java`
+- `chatbloom-paper/src/main/java/icewolf23x/chatBloom/service/PrivateMessageService.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/ChatMessagePacket.java`
+- `chatbloom-common/src/main/java/me/icewolf23/chatbloom/common/network/PrivateMessagePacket.java`
+- `chatbloom-velocity/src/main/java/me/icewolf23/chatbloom/velocity/bootstrap/ChatBloomVelocityPlugin.java`
+- `docs/ChatBloom_Program_Run2.md`
+- `docs/ChatBloom_Program_full.md`
+
+CONSTRAINTS TO PRESERVE:
+- Standalone Paper mode must remain clean and unaffected when `deployment.mode` is `STANDALONE`.
+- Proxy mode must stay optional and restart-based.
+- No giant transport framework beyond what Run 2 actually needs.
+- No forcing ChatItems into broken cross-server behavior if that is not cleanly finishable now.
+- Velocity should become routing authority only where needed, without stealing local Paper-only responsibilities.
+- No architecture reset of the Run 1/Run 2 boundaries.
+
+WHAT I NEED BACK:
+- decisione pratica sul transport minimale da usare nel Run 2
+- scope minimo accettabile della routing implementation
+- cosa fare su Paper e cosa fare su Velocity
+- cosa rimandare esplicitamente a un pass successivo
+- ordine consigliato
+- rischi
+- errori da evitare

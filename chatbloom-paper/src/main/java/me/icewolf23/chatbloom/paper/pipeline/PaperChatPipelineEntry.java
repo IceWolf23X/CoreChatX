@@ -24,6 +24,6 @@ public final class PaperChatPipelineEntry {
             }
             return;
         }
-        chatService.handlePublicChat(player, context.rawInput());
+        chatService.handlePublicChat(player, context.rawInput(), context.channelId());
     }
 }

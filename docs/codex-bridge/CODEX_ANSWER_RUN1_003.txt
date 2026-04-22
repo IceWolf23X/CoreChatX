@@ -1,0 +1,65 @@
+RUN 1 DECISION
+
+Decisione pratica:
+Run 1 può essere considerato chiuso.
+
+Motivazione:
+- il multi-module split esiste ed è coerente
+- root + moduli compilano
+- il runtime Paper usa già il nuovo entrypoint me.icewolf23.chatbloom.paper.bootstrap.ChatBloomPaperPlugin
+- plugin.yml punta al nuovo main
+- i registri reali esistono e partecipano al bootstrap Paper
+- common contiene le fondazioni condivise
+- velocity resta uno skeleton compilabile, che è corretto per Run 1
+- pipeline / privacy / moderation / settings hanno già una base reale sufficiente per aprire Run 2
+
+Ultimo cleanup consigliato prima di chiudere Run 1:
+Non fare una rimozione del base class legacy adesso.
+Al massimo fai un cleanup molto piccolo:
+- lascia icewolf23x.chatBloom.ChatBloom come compatibility base temporanea
+- documentalo esplicitamente come bridge transitorio Run1
+- non aggiungere nuova logica lì
+- non usare quel tipo come centro della nuova architettura in Run 2
+
+Sul base class legacy:
+Sì, può restare per ora.
+Non è più il runtime entrypoint.
+I registri nuovi sono già ancorati al nuovo main class.
+Rimuoverlo ora costringerebbe a toccare in blocco molti command/listener/service legacy senza sbloccare davvero qualcosa di importante per Run 2.
+
+Quindi:
+- NON bloccare Run 2 per eliminare subito icewolf23x.chatBloom.ChatBloom
+- NON fare un mass rename dei legacy feature classes in Run 1
+- considera quel base class una compat layer congelata
+
+Fondazioni Run 1: sufficienti?
+Sì.
+Non vedo una fondazione mancante che valga un altro refactor adesso.
+Le basi già presenti sono sufficienti per iniziare Run 2 in modo pulito:
+- bootstrap
+- registries
+- repository abstraction
+- common contracts
+- pipeline baseline
+- privacy/moderation hooks into PM/public flow
+- settings GUI foundation
+- velocity stub
+
+Ordine consigliato per chiudere Run 1:
+1. eventualmente aggiungi solo un commento/TODO chiaro sul base class legacy come compatibility-only
+2. verifica ancora una volta bootstrap standalone Paper + reload + package
+3. congela Run 1
+4. apri Run 2 senza allargare altro lo scope architetturale di Run 1
+
+Rischi se provi a fare di più ora:
+- tocchi troppi command/listener/service legacy solo per coerenza estetica
+- aumenti il rischio di regressioni standalone
+- trasformi la chiusura di Run 1 in un mezzo Run 1.5
+- inizi a spendere tempo di Run 2 in cleanup che non sblocca feature
+
+Errori da evitare:
+- eliminare il base class legacy solo per principio
+- aggiungere nuova business logic al base class legacy
+- aprire ora una mass migration dei package legacy
+- spostare logica feature-heavy in common
+- trattare velocity come se dovesse essere già oltre lo stub di Run 1

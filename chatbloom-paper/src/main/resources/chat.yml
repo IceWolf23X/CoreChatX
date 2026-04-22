@@ -3,12 +3,14 @@
 public-chat:
   enabled: true
   # Supported placeholders inside the format:
-  # {plugin_prefix}, {rank_prefix}, {player_name}, {message}
+  # {plugin_prefix}, {channel_prefix}, {rank_prefix}, {player_name}, {message}
   # Layout inspired by the older NetworkChat proxy format:
   # prefix + player name + italic separator + processed message.
   # ChatBloom keeps its own default palette instead of copying the old colors verbatim.
-  format: "{plugin_prefix} {rank_prefix}<white>{player_name}</white><dark_gray><italic>» </italic></dark_gray>{message}"
+  format: "{plugin_prefix} {channel_prefix}{rank_prefix}<white>{player_name}</white><dark_gray><italic>» </italic></dark_gray>{message}"
   plugin-prefix: "<dark_gray>[</dark_gray><gradient:#79d6b8:#5aa9ff>Chat</gradient><dark_gray>]</dark_gray>"
+  # Applied to non-global active channels such as local or staff.
+  channel-prefix-format: "<dark_gray>[</dark_gray><white>{channel_name}</white><dark_gray>]</dark_gray> "
   fallback-rank-prefix: ""
 
 mentions:

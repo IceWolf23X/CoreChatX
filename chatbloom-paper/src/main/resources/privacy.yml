@@ -1,9 +1,12 @@
-# Privacy foundation for Run 1.
+# Privacy defaults for Run 2.
 
 private-messages:
   enabled-by-default: true
   allow-staff-bypass: true
+  staff-bypass-permission: "chatbloom.staff"
 
 ignore:
   enabled: true
   max-ignored-players: 200
+  # If true, ignored players also stop mention/custom-ping notifications.
+  block-mentions-from-ignored: true

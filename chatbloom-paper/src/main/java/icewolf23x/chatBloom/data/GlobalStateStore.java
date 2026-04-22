@@ -13,6 +13,7 @@ public final class GlobalStateStore {
     private final File file;
     private FileConfiguration configuration;
     private int firstJoinCount;
+    private boolean chatMuted;
 
     public GlobalStateStore(ChatBloom plugin) {
         this.plugin = plugin;
@@ -23,6 +24,7 @@ public final class GlobalStateStore {
     public void reload() {
         this.configuration = YamlConfiguration.loadConfiguration(file);
         this.firstJoinCount = configuration.getInt("first-joins.count", 0);
+        this.chatMuted = configuration.getBoolean("chat.muted", false);
     }
 
     public int incrementFirstJoinCount() {
@@ -39,6 +41,16 @@ public final class GlobalStateStore {
     public void setFirstJoinCount(int firstJoinCount) {
         this.firstJoinCount = firstJoinCount;
         configuration.set("first-joins.count", firstJoinCount);
+        save();
+    }
+
+    public boolean isChatMuted() {
+        return chatMuted;
+    }
+
+    public void setChatMuted(boolean chatMuted) {
+        this.chatMuted = chatMuted;
+        configuration.set("chat.muted", chatMuted);
         save();
     }
 

@@ -25,6 +25,11 @@ public final class DefaultPrivacyService implements PrivacyService {
     }
 
     @Override
+    public Set<UUID> ignoredPlayers(UUID actor) {
+        return Set.copyOf(ignoreRepository.loadIgnored(actor));
+    }
+
+    @Override
     public void addIgnore(UUID actor, UUID target) {
         Set<UUID> ignored = new HashSet<>(ignoreRepository.loadIgnored(actor));
         ignored.add(target);

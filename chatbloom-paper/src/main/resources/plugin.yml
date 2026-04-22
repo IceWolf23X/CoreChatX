@@ -32,6 +32,37 @@ commands:
   ping:
     description: Manage ping notification preferences.
     usage: /ping <sound|actionbar> [on|off|toggle|status]
+  channel:
+    description: Manage your active chat channel.
+    usage: /channel <list|set <id>>
+  ignore:
+    description: Ignore a player for private messages.
+    usage: /ignore <player>
+  unignore:
+    description: Remove a player from your ignore list.
+    usage: /unignore <player>
+  ignorelist:
+    description: Show your ignored players.
+    usage: /ignorelist
+  pmtoggle:
+    description: Toggle whether you can receive private messages.
+    usage: /pmtoggle
+  chatsettings:
+    description: Open the ChatBloom settings menu.
+    aliases: [ cbsettings ]
+    usage: /chatsettings
+  mute:
+    description: Mute a player temporarily or permanently.
+    usage: /mute <player> [duration] [reason...]
+  unmute:
+    description: Remove a mute from a player.
+    usage: /unmute <player>
+  mutechat:
+    description: Toggle global chat mute.
+    usage: /mutechat
+  clearchat:
+    description: Clear visible chat for online players.
+    usage: /clearchat
 
 permissions:
   chatbloom.command.chatbloom:
@@ -57,6 +88,42 @@ permissions:
     default: op
   chatbloom.command.ping:
     description: Change ping notification preferences.
+    default: op
+  chatbloom.command.channel:
+    description: Use channel switching commands.
+    default: op
+  chatbloom.command.ignore:
+    description: Ignore players for private messages.
+    default: op
+  chatbloom.command.unignore:
+    description: Remove ignored players.
+    default: op
+  chatbloom.command.ignorelist:
+    description: View your ignore list.
+    default: op
+  chatbloom.command.pmtoggle:
+    description: Toggle private message receiving.
+    default: op
+  chatbloom.command.mute:
+    description: Mute a player.
+    default: op
+  chatbloom.command.unmute:
+    description: Unmute a player.
+    default: op
+  chatbloom.command.mutechat:
+    description: Toggle global chat mute.
+    default: op
+  chatbloom.command.clearchat:
+    description: Clear visible chat.
+    default: op
+  chatbloom.moderation.bypass.mutechat:
+    description: Bypass global chat mute.
+    default: op
+  chatbloom.moderation.bypass.repeat:
+    description: Bypass anti-repeat checks.
+    default: op
+  chatbloom.moderation.bypass.caps:
+    description: Bypass anti-caps checks.
     default: op
   chatbloom.cooldown.bypass.public:
     description: Bypass the public chat cooldown.

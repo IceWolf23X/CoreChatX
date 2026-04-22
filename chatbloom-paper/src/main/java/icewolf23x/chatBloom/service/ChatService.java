@@ -15,20 +15,29 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public final class ChatService {
 
     private final ChatBloom plugin;
     private final Map<String, CustomPingDefinition> customPings = new HashMap<>();
+    private final Map<UUID, Deque<String>> recentMessages = new HashMap<>();
     private boolean publicChatEnabled;
     private boolean mentionsEnabled;
     private String noMessageSentPath = "chat.no-message-sent";
+    private boolean antiRepeatEnabled;
+    private int antiRepeatWindow;
+    private boolean antiCapsEnabled;
+    private int antiCapsMinLength;
+    private double antiCapsMaxRatio;
 
     public ChatService(ChatBloom plugin) {
         this.plugin = plugin;
@@ -38,6 +47,11 @@ public final class ChatService {
     public void reload() {
         this.publicChatEnabled = plugin.configuration().chat().getBoolean("public-chat.enabled", true);
         this.mentionsEnabled = plugin.configuration().chat().getBoolean("mentions.enabled", true);
+        this.antiRepeatEnabled = plugin.configs().moderation().getBoolean("anti-repeat.enabled", true);
+        this.antiRepeatWindow = Math.max(1, plugin.configs().moderation().getInt("anti-repeat.similarity-window", 3));
+        this.antiCapsEnabled = plugin.configs().moderation().getBoolean("anti-caps.enabled", false);
+        this.antiCapsMinLength = Math.max(1, plugin.configs().moderation().getInt("anti-caps.min-length", 8));
+        this.antiCapsMaxRatio = plugin.configs().moderation().getDouble("anti-caps.max-uppercase-ratio", 0.7D);
         this.customPings.clear();
         ConfigurationSection section = plugin.configuration().pings().getConfigurationSection("custom-pings");
         if (section == null) {
@@ -63,7 +77,25 @@ public final class ChatService {
     }
 
     public void handlePublicChat(Player sender, String rawMessage) {
+        handlePublicChat(sender, rawMessage, plugin.services().channelService().getActiveChannel(sender.getUniqueId()));
+    }
+
+    public void handlePublicChat(Player sender, String rawMessage, String channelId) {
         if (!publicChatEnabled) {
+            return;
+        }
+
+        if (plugin.services().moderationService().isChatMuted() && !sender.hasPermission("chatbloom.moderation.bypass.mutechat")) {
+            sender.sendMessage(plugin.formats().configMessage("moderation.chat-muted", sender));
+            return;
+        }
+
+        var channel = plugin.services().channelService().resolveActiveChannel(sender.getUniqueId());
+        if (!channel.id().equalsIgnoreCase(channelId)) {
+            channelId = channel.id();
+        }
+        if (!plugin.services().channelAudienceResolver().canSend(sender, channel)) {
+            sender.sendMessage(plugin.formats().configMessage("channels.no-send-permission", sender));
             return;
         }
 
@@ -80,6 +112,16 @@ public final class ChatService {
             return;
         }
 
+        String normalizedPlain = normalizeForModeration(plugin.legacyFormatting().stripCodes(sanitized));
+        if (shouldBlockAntiRepeat(sender, normalizedPlain)) {
+            sender.sendMessage(plugin.formats().configMessage("moderation.anti-repeat", sender));
+            return;
+        }
+        if (shouldBlockAntiCaps(sender, normalizedPlain)) {
+            sender.sendMessage(plugin.formats().configMessage("moderation.anti-caps", sender));
+            return;
+        }
+
         ProcessedMessage rendered = processMessage(sender, sanitized);
         if (rendered.plainText().trim().isEmpty()) {
             sender.sendMessage(plugin.formats().configMessage(noMessageSentPath, sender));
@@ -87,13 +129,19 @@ public final class ChatService {
         }
 
         plugin.cooldowns().markPublicAccepted(sender);
+        recordModerationHistory(sender, normalizedPlain);
 
-        Component finalMessage = plugin.formats().publicChat(sender, rendered.component());
-        for (Player player : Bukkit.getOnlinePlayers()) {
+        Component finalMessage = plugin.formats().publicChat(sender, rendered.component(), channel.id());
+        Set<Player> recipients = plugin.services().channelAudienceResolver().resolveRecipients(sender, channel);
+        for (Player player : recipients) {
             player.sendMessage(finalMessage);
         }
-        notifyTargets(sender.getName(), rendered.notificationTargets(), rendered.bypassTargets());
-        logConsole(finalMessage);
+        Set<Player> notificationTargets = new LinkedHashSet<>(rendered.notificationTargets());
+        notificationTargets.retainAll(recipients);
+        Set<Player> bypassTargets = new LinkedHashSet<>(rendered.bypassTargets());
+        bypassTargets.retainAll(recipients);
+        notifyTargets(sender.getUniqueId(), sender.getName(), notificationTargets, bypassTargets);
+        logConsole(channel.id(), finalMessage);
     }
 
     public ProcessedMessage processMessage(Player sender, String rawMessage) {
@@ -194,18 +242,57 @@ public final class ChatService {
         return new TokenRender(filtered.plainText(), filtered.rendered());
     }
 
-    private void notifyTargets(String senderName, Set<Player> targets, Set<Player> bypassTargets) {
+    private void notifyTargets(UUID senderId, String senderName, Set<Player> targets, Set<Player> bypassTargets) {
+        boolean blockIgnored = plugin.configs().privacy().getBoolean("ignore.block-mentions-from-ignored", true);
         for (Player target : targets) {
+            if (blockIgnored && plugin.services().privacyService().isIgnoring(target.getUniqueId(), senderId)) {
+                continue;
+            }
             boolean bypass = bypassTargets.contains(target);
             plugin.notifications().notifyMention(senderName, target, bypass);
         }
     }
 
-    private void logConsole(Component component) {
+    private boolean shouldBlockAntiRepeat(Player sender, String normalizedPlain) {
+        if (!antiRepeatEnabled || normalizedPlain.isBlank() || sender.hasPermission("chatbloom.moderation.bypass.repeat")) {
+            return false;
+        }
+        Deque<String> history = recentMessages.computeIfAbsent(sender.getUniqueId(), ignored -> new ArrayDeque<>());
+        return history.stream().anyMatch(normalizedPlain::equalsIgnoreCase);
+    }
+
+    private boolean shouldBlockAntiCaps(Player sender, String normalizedPlain) {
+        if (!antiCapsEnabled || sender.hasPermission("chatbloom.moderation.bypass.caps")) {
+            return false;
+        }
+        long letters = normalizedPlain.chars().filter(Character::isLetter).count();
+        if (letters < antiCapsMinLength) {
+            return false;
+        }
+        long uppercase = normalizedPlain.chars().filter(Character::isUpperCase).count();
+        return letters > 0 && ((double) uppercase / letters) > antiCapsMaxRatio;
+    }
+
+    private void recordModerationHistory(Player sender, String normalizedPlain) {
+        if (!antiRepeatEnabled || normalizedPlain.isBlank()) {
+            return;
+        }
+        Deque<String> history = recentMessages.computeIfAbsent(sender.getUniqueId(), ignored -> new ArrayDeque<>());
+        history.addLast(normalizedPlain);
+        while (history.size() > antiRepeatWindow) {
+            history.removeFirst();
+        }
+    }
+
+    private String normalizeForModeration(String input) {
+        return TextSanitizer.sanitize(input).trim().replaceAll("\\s+", " ");
+    }
+
+    private void logConsole(String channelId, Component component) {
         if (!plugin.configuration().main().getBoolean("logging.public-chat", true)) {
             return;
         }
-        plugin.getLogger().info("[CHAT] " + PlainTextComponentSerializer.plainText().serialize(component));
+        plugin.getLogger().info("[CHAT:" + channelId + "] " + PlainTextComponentSerializer.plainText().serialize(component));
     }
 
     private boolean isAllowedToUse(CommandSender sender, CustomPingDefinition definition) {

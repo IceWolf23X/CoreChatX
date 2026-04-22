@@ -9,6 +9,10 @@ public interface ModerationService {
 
     ModerationDecision evaluatePrivateMessage(ChatPipelineContext context);
 
+    boolean isChatMuted();
+
+    void setChatMuted(boolean muted);
+
     boolean isMuted(UUID playerId);
 
     void mute(UUID playerId, Instant until, String reason, UUID actorId);

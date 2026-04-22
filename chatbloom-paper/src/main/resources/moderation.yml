@@ -1,6 +1,10 @@
-# Moderation foundation for Run 1.
+# Moderation defaults for Run 2.
 
 mute:
+  enabled: true
+  default-reason: "No reason provided"
+
+mutechat:
   enabled: true
 
 anti-repeat:
@@ -10,3 +14,5 @@ anti-repeat:
 
 anti-caps:
   enabled: false
+  min-length: 8
+  max-uppercase-ratio: 0.7

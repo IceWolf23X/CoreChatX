@@ -41,10 +41,22 @@ public final class FormatService {
     }
 
     public Component publicChat(Player player, Component message) {
+        return publicChat(player, message, "global");
+    }
+
+    public Component publicChat(Player player, Component message, String channelId) {
         Component pluginPrefix = deserialize(
             plugin.configuration().chat().getString("public-chat.plugin-prefix", ""),
             player
         );
+        Component channelPrefix = Component.empty();
+        if (channelId != null && !channelId.isBlank() && !"global".equalsIgnoreCase(channelId)) {
+            channelPrefix = deserialize(
+                plugin.configuration().chat().getString("public-chat.channel-prefix-format", "<dark_gray>[</dark_gray><white>{channel_name}</white><dark_gray>]</dark_gray> "),
+                player,
+                Placeholder.unparsed("channel_name", channelId)
+            );
+        }
         Component rankPrefix = plugin.hooks().hasLuckPerms()
             ? plugin.hooks().groupPrefix(player)
             : deserialize(plugin.configuration().chat().getString("public-chat.fallback-rank-prefix", ""), player);
@@ -53,6 +65,7 @@ public final class FormatService {
             template,
             player,
             Placeholder.component("plugin_prefix", pluginPrefix),
+            Placeholder.component("channel_prefix", channelPrefix),
             Placeholder.component("rank_prefix", rankPrefix),
             Placeholder.unparsed("player_name", player.getName()),
             Placeholder.component("message", message)

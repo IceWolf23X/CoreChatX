@@ -25,6 +25,7 @@ import me.icewolf23.chatbloom.paper.pipeline.PublicModerationStep;
 import me.icewolf23.chatbloom.paper.platform.DefaultChannelService;
 import me.icewolf23.chatbloom.paper.platform.DefaultModerationService;
 import me.icewolf23.chatbloom.paper.platform.DefaultPrivacyService;
+import me.icewolf23.chatbloom.paper.platform.PaperChannelAudienceResolver;
 
 import java.time.Clock;
 import java.util.List;
@@ -42,6 +43,7 @@ public final class ServiceRegistry {
     private PaperChatPipelineEntry chatPipelineEntry;
     private NetworkBridge networkBridge;
     private SettingsMenuFactory settingsMenuFactory;
+    private PaperChannelAudienceResolver channelAudienceResolver;
     private WordFilterService wordFilterService;
     private LegacyFormattingService legacyFormattingService;
     private CooldownService cooldownService;
@@ -62,7 +64,7 @@ public final class ServiceRegistry {
         this.eventBus = new SimpleEventBus();
         this.channelService = new DefaultChannelService(configRegistry.channels(), repositoryRegistry.activeChannelRepository());
         this.privacyService = new DefaultPrivacyService(repositoryRegistry.ignoreRepository(), repositoryRegistry.playerStateRepository());
-        this.moderationService = new DefaultModerationService(repositoryRegistry.muteRepository(), Clock.systemUTC());
+        this.moderationService = new DefaultModerationService(repositoryRegistry.muteRepository(), repositoryRegistry.globalStateRepository(), Clock.systemUTC());
         List<ChatPipelineStep> publicChatSteps = List.of(
             new ActiveChannelResolutionStep(channelService),
             new PublicModerationStep(moderationService)
@@ -80,6 +82,7 @@ public final class ServiceRegistry {
         this.chatPipelineEntry = new PaperChatPipelineEntry(chatPipeline, chatService);
         this.networkBridge = new PaperNetworkBridge(false);
         this.settingsMenuFactory = new SettingsMenuFactory();
+        this.channelAudienceResolver = new PaperChannelAudienceResolver();
     }
 
     public void reload() {
@@ -123,6 +126,10 @@ public final class ServiceRegistry {
 
     public SettingsMenuFactory settingsMenuFactory() {
         return settingsMenuFactory;
+    }
+
+    public PaperChannelAudienceResolver channelAudienceResolver() {
+        return channelAudienceResolver;
     }
 
     public WordFilterService wordFilterService() {

@@ -18,9 +18,32 @@ reload:
   success: "{prefix} <green>Reload complete.</green>"
   summary: "{prefix} <gray>Modules reloaded: chat, pings, PMs, filter, chat items, player data hooks.</gray>"
 
+channels:
+  list: "{prefix} <gray>Available channels: <white>{channels}</white></gray>"
+  switched: "{prefix} <gray>Your active channel is now <white>{channel_name}</white>.</gray>"
+  not-found: "{prefix} <red>Channel <white>{channel_name}</white> does not exist.</red>"
+  disabled: "{prefix} <red>Channel <white>{channel_name}</white> is currently disabled.</red>"
+  no-send-permission: "{prefix} <red>You cannot send messages to that channel.</red>"
+
+privacy:
+  ignore-self: "{prefix} <red>You cannot ignore yourself.</red>"
+  already-ignoring: "{prefix} <yellow>You are already ignoring <white>{target_name}</white>.</yellow>"
+  not-ignoring: "{prefix} <yellow>You are not ignoring <white>{target_name}</white>.</yellow>"
+  ignore-added: "{prefix} <gray>You are now ignoring <white>{target_name}</white>.</gray>"
+  ignore-removed: "{prefix} <gray>You are no longer ignoring <white>{target_name}</white>.</gray>"
+  ignore-list: "{prefix} <gray>Ignored players: <white>{targets}</white></gray>"
+  pm-toggled: "{prefix} <gray>Private messages are now <white>{state}</white>.</gray>"
+
 moderation:
   muted-public: "{prefix} <red>You are muted and cannot use public chat right now.</red>"
   muted-private: "{prefix} <red>You are muted and cannot send private messages right now.</red>"
+  chat-muted: "{prefix} <red>Public chat is currently muted.</red>"
+  chat-muted-toggled: "{prefix} <gray>Global chat mute is now <white>{state}</white>.</gray>"
+  anti-repeat: "{prefix} <red>Please do not repeat the same message.</red>"
+  anti-caps: "{prefix} <red>Please avoid excessive caps.</red>"
+  mute-success: "{prefix} <gray>Muted <white>{target_name}</white>.<gray> Reason: <white>{reason}</white></gray>"
+  unmute-success: "{prefix} <gray>Unmuted <white>{target_name}</white>.</gray>"
+  clear-chat-notice: "{prefix} <gray>Chat was cleared by <white>{sender_name}</white>.</gray>"
 
 cooldown:
   public: "{prefix} <yellow>You must wait <white>{seconds}</white> more second(s) before chatting again.</yellow>"

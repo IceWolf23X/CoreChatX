@@ -14,11 +14,12 @@ public final class YamlGlobalStateRepository implements GlobalStateRepository {
 
     @Override
     public GlobalStateRecord load() {
-        return new GlobalStateRecord(globalStateStore.getFirstJoinCount());
+        return new GlobalStateRecord(globalStateStore.getFirstJoinCount(), globalStateStore.isChatMuted());
     }
 
     @Override
     public void save(GlobalStateRecord record) {
         globalStateStore.setFirstJoinCount(record.firstJoinCount());
+        globalStateStore.setChatMuted(record.chatMuted());
     }
 }

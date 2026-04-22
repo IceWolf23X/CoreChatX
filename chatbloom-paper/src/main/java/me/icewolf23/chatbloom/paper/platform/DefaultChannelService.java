@@ -7,6 +7,7 @@ import me.icewolf23.chatbloom.common.storage.repository.ActiveChannelRepository;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -29,11 +30,31 @@ public final class DefaultChannelService implements ChannelService {
     }
 
     @Override
+    public Collection<ChatChannel> channels() {
+        return channels.values();
+    }
+
+    @Override
     public ChatChannel getDefaultChannel() {
         return channels.values().stream()
             .filter(ChatChannel::defaultChannel)
             .findFirst()
             .orElseGet(() -> new ChatChannel("global", true, true, ChannelScope.SERVER, null, "", ""));
+    }
+
+    @Override
+    public ChatChannel resolveActiveChannel(UUID playerId) {
+        String stored = activeChannelRepository.loadActiveChannel(playerId);
+        ChatChannel channel = stored == null || stored.isBlank()
+            ? getDefaultChannel()
+            : findChannel(stored).orElseGet(this::getDefaultChannel);
+        if (!channel.enabled()) {
+            channel = getDefaultChannel();
+        }
+        if (stored == null || stored.isBlank() || !channel.id().equalsIgnoreCase(stored)) {
+            activeChannelRepository.saveActiveChannel(playerId, channel.id());
+        }
+        return channel;
     }
 
     @Override
@@ -43,8 +64,7 @@ public final class DefaultChannelService implements ChannelService {
 
     @Override
     public String getActiveChannel(UUID playerId) {
-        String stored = activeChannelRepository.loadActiveChannel(playerId);
-        return stored == null || stored.isBlank() ? getDefaultChannel().id() : stored;
+        return resolveActiveChannel(playerId).id();
     }
 
     private void loadChannels(FileConfiguration configuration) {
