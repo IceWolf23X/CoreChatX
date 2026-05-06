@@ -3,7 +3,7 @@
 CoreChatX is a complete communication suite for Minecraft servers.
 It brings chat, private messages, channels, mentions, pings, chat item previews, chat bubbles, moderation, player settings, locales, and external bridges into one polished system.
 
-The idea is simple: server chat should feel like one product, not a pile of small plugins held together by luck, config copy-paste, and quiet hope.
+The idea is simple: server chat should feel like one product, not a stack of separate plugins that each need their own configuration, commands, and maintenance.
 
 This page is a commercial-style feature overview.
 Exact config keys, defaults, limits, and operational details are documented in `PLUGIN_CONFIGURATION_INSTRUCTIONS.md`.
@@ -12,7 +12,7 @@ Exact config keys, defaults, limits, and operational details are documented in `
 
 ## Why CoreChatX
 
-Many servers end up installing one plugin for chat, another for private messages, another for mentions, another for channels, another for Discord, another for Telegram, another for chat bubbles, another for item previews, and then one more just to make the first six stop arguing.
+Many servers end up installing one plugin for chat, another for private messages, another for mentions, another for channels, another for Discord, another for Telegram, another for chat bubbles, another for item previews, and then one more just to keep the whole setup consistent.
 
 That works, technically.
 It also turns chat into a maintenance hobby.
@@ -26,7 +26,7 @@ CoreChatX is built for server owners who want the whole communication experience
 - one place to manage public chat, PMs, channels, pings, bridges, moderation, and rich interactions
 
 It is not trying to be "yet another chat plugin".
-It is trying to replace the messy drawer full of chat-related plugins with one clean, friendly, server-ready system.
+It is trying to replace scattered chat-related plugin stacks with one clean, friendly, server-ready system.
 
 ---
 
@@ -40,8 +40,8 @@ CoreChatX currently:
 - uses `corechatx` as the Velocity plugin id
 - works on standalone Paper servers
 - works on Velocity networks with multiple Paper backends
-- has been verified on a live Paper test server
-- has been verified on a small live Velocity network
+- has been tested on a live Paper test server
+- has been tested on a small live Velocity network
 - supports Discord inbound and outbound messages
 - supports Telegram inbound and outbound messages
 - supports Telegram forum topic routing
@@ -79,7 +79,7 @@ Private messages can work with social spy and ignore rules.
 Network chat can carry rich Adventure components and ChatItem preview references.
 Bridges can follow channel routing instead of acting like a separate side project.
 
-That is the difference between a chat system and a folder full of plugins with overlapping commands.
+That is the difference between a chat system and separate plugins with overlapping commands and disconnected configuration.
 
 ---
 
@@ -119,7 +119,7 @@ MiniMessage support makes it easy to use:
 - reusable formatting patterns
 - clean rich text across chat, messages, previews, and bridge output
 
-This gives CoreChatX a modern Paper-native feel instead of the usual "legacy chat plugin wearing a new coat" experience.
+This gives CoreChatX a modern Paper-native feel instead of a legacy chat setup with richer formatting bolted on afterward.
 
 ---
 
@@ -138,7 +138,7 @@ That opens the door to fast, flexible interactions based on:
 - installed PlaceholderAPI expansions
 - custom server logic exposed through placeholders
 
-In practice, this means server owners can build dynamic chat interactions without adding yet another scripting plugin just to make a hover line show something useful.
+In practice, this means server owners can build dynamic chat interactions without extra glue just to make a hover line or click action show something useful.
 
 If PlaceholderAPI can expose it, CoreChatX can help turn it into part of the chat experience.
 
@@ -167,7 +167,7 @@ They can include:
 - channel restrictions
 - optional PlaceholderAPI rendering
 
-This is the kind of small feature that usually becomes "install another plugin".
+This is the kind of small feature that often becomes "add another plugin".
 Here, it is just part of the chat suite.
 
 ---
@@ -213,7 +213,7 @@ Channels can decide:
 - whether ChatItems are allowed
 - whether messages can be exported to Discord or Telegram
 
-This keeps channel behavior centralized instead of scattered across several plugins that all think they own chat.
+This keeps channel behavior centralized instead of scattered across several plugins with separate ideas of how chat should behave.
 
 ---
 
@@ -251,7 +251,7 @@ CoreChatX includes the everyday moderation controls a real server needs:
 Moderation is handled inside the chat layer itself.
 That means it works naturally with channels, private messages, network behavior, and player settings.
 
-No more trying to make a moderation plugin guess what a separate chat plugin already knows.
+This avoids making separate moderation and chat tools duplicate or guess each other's state.
 
 ---
 
@@ -330,6 +330,10 @@ This is useful for multilingual communities and for servers that want every mess
 
 CoreChatX includes built-in bridge support.
 
+Important disclosure: Discord and Telegram bridges are optional and only run when the server owner enables and configures them.
+When enabled, CoreChatX can send selected chat content, player display names, channel labels, and related message formatting to the Discord or Telegram services configured by the server owner.
+Inbound bridge messages can also bring Discord or Telegram messages back into configured Minecraft channels.
+
 Bridge features include:
 
 - Discord outbound messages
@@ -343,7 +347,7 @@ Bridge features include:
 - cleaner reload and shutdown behavior
 - safe message length handling
 
-The bridge layer is treated as part of the chat system, not as an awkward external pipe bolted onto the side.
+The bridge layer is treated as part of the chat system, not as a separate external pipe with unrelated routing rules.
 
 That matters because channel rules, formatting, network behavior, and bridge routing should agree with each other.
 If they do not, players notice.
@@ -368,7 +372,7 @@ In network mode, it can keep these features working across servers:
 - bridge export without duplicate network messages
 
 This is where the "one suite" approach matters most.
-A network setup should not require a separate plugin stack on every backend just to make messages, toggles, mentions, and PMs remember that players moved servers.
+A network setup should not require a separate plugin stack on every backend just to make messages, toggles, mentions, and PMs understand that players moved servers.
 
 ---
 
@@ -412,13 +416,13 @@ CoreChatX includes practical behavior for server owners:
 - bridge lifecycle handling on reload and shutdown
 - config regeneration support
 
-These are not flashy player-facing features, but they are the difference between a plugin you can run and a plugin you have to babysit.
+These are not flashy player-facing features, but they make day-to-day operation much easier to trust and maintain.
 
 ---
 
 ## Verified
 
-The current project state has been checked through:
+The current project state has been tested through:
 
 - build and test passes
 - standalone Paper startup
@@ -426,8 +430,8 @@ The current project state has been checked through:
 - Paper startup in network mode
 - command checks
 - config regeneration checks
-- live Paper test server checks
-- live Velocity network checks
+- live Paper test environment checks
+- live Velocity network test environment checks
 
 ---
 
@@ -466,4 +470,4 @@ CoreChatX gives a server:
 
 In short, CoreChatX is for servers that want communication to feel intentional.
 
-If your chat setup needs five plugins, three bridges, two placeholder patches, and a prayer just to produce one message, CoreChatX is the polite suggestion that maybe the chat box deserves better.
+If your chat setup needs several plugins, multiple bridge configs, and extra placeholder glue just to produce one consistent message, CoreChatX is built to make that experience simpler.
