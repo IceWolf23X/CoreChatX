@@ -4,7 +4,7 @@ CoreChatX is a complete communication suite for Minecraft servers.
 
 All official information about the plugin is now available on the CoreChatX website:
 
-> **Website:** `TODO: add website link here`
+> **Website:** https://icewolf23x.github.io/CoreChatX-website/
 
 The website contains the complete and up-to-date information about:
 
@@ -30,7 +30,7 @@ Use the GitHub **Issues** section to report problems, request improvements, or t
 
 Before opening an issue, please check the official website first:
 
-> `TODO: add website link here`
+> https://icewolf23x.github.io/CoreChatX-website/
 
 When opening an issue, include as much useful information as possible.
 
